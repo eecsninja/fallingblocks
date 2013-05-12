@@ -10,6 +10,8 @@
 
 struct SDL_Surface;
 
+#define CBLOCK_NUM_SQUARES             4
+
 class cBlock
 {
 private:
@@ -21,7 +23,7 @@ private:
     BlockType m_Type;
 
     // Array of squares that make up the block //
-    cSquare m_Squares[4];
+    cSquare m_Squares[CBLOCK_NUM_SQUARES];
 
 public:
     // The constructor just sets the block location and calls SetupSquares //

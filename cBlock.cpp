@@ -110,7 +110,7 @@ void cBlock::SetupSquares(int x, int y, SDL_Surface* bitmap)
 // Draw() simply iterates through the squares and calls their Draw() functions. //
 void cBlock::Draw(SDL_Surface* Window)
 {
-    for (int i=0; i<4; i++)
+    for (int i = 0; i < CBLOCK_NUM_SQUARES; ++i)
     {
         m_Squares[i].Draw(Window);
     }
@@ -135,7 +135,7 @@ void cBlock::Move(Direction dir)
         } break;
     }
 
-    for (int i=0; i<4; i++)
+    for (int i = 0; i < CBLOCK_NUM_SQUARES; ++i)
     {
         m_Squares[i].Move(dir);
     }
@@ -146,7 +146,7 @@ void cBlock::Rotate()
 {
     int x1, y1, x2, y2;
 
-    for (int i=0; i<4; i++)
+    for (int i=0; i < CBLOCK_NUM_SQUARES; ++i)
     {
         x1 = m_Squares[i].GetCenterX();
         y1 = m_Squares[i].GetCenterY();
@@ -172,7 +172,7 @@ int* cBlock::GetRotatedSquares()
     int* temp_array = new int[8];
     int x1, y1, x2, y2;
 
-    for (int i=0; i<4; i++)
+    for (int i=0; i < CBLOCK_NUM_SQUARES; ++i)
     {
         x1 = m_Squares[i].GetCenterX();
         y1 = m_Squares[i].GetCenterY();

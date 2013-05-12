@@ -705,7 +705,7 @@ bool CheckEntityCollisions(cBlock* block, Direction dir)
     cSquare* temp_array = block->GetSquares();
 
     // Now just call the other CheckEntityCollisions() on each square //
-    for (int i=0; i<4; i++)
+    for (int i = 0; i < CBLOCK_NUM_SQUARES; ++i)
     {
         if ( CheckEntityCollisions(&temp_array[i], dir) )
             return true;
@@ -771,7 +771,7 @@ bool CheckWallCollisions(cBlock* block, Direction dir)
     cSquare* temp_array = block->GetSquares();
 
     // Call other CheckWallCollisions() on each square //
-    for (int i=0; i<4; i++)
+    for (int i = 0; i < CBLOCK_NUM_SQUARES; ++i)
     {
         if ( CheckWallCollisions(&temp_array[i], dir) )
             return true;
@@ -789,7 +789,7 @@ bool CheckRotationCollisions(cBlock* block)
     // Distance between two touching squares //
     int distance = SQUARE_MEDIAN * 2;
 
-    for (int i=0; i<4; i++)
+    for (int i = 0; i < CBLOCK_NUM_SQUARES; ++i)
     {
         // Check to see if the block will go out of bounds //
         if ( (temp_array[i*2] < GAME_AREA_LEFT) || (temp_array[i*2] > GAME_AREA_RIGHT) )
@@ -855,7 +855,7 @@ void ChangeFocusBlock()
     cSquare* square_array = g_FocusBlock->GetSquares();
 
     // Add focus block squares to g_OldSquares //
-    for (int i=0; i<4; i++)
+    for (int i = 0; i < CBLOCK_NUM_SQUARES; ++i)
     {
         g_OldSquares.push_back(square_array[i]);
     }
