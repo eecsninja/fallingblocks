@@ -77,5 +77,3 @@
 #define YELLOW_SQUARE_Y 400
 
 //  Aaron Cox, 2004 //
-
-
