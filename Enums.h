@@ -6,20 +6,20 @@
 
 enum BlockType
 {
-	SQUARE_BLOCK, 
-	T_BLOCK,
-	L_BLOCK,
-	BACKWARDS_L_BLOCK,
-	STRAIGHT_BLOCK,
-	S_BLOCK,
-	BACKWARDS_S_BLOCK	
+    SQUARE_BLOCK,
+    T_BLOCK,
+    L_BLOCK,
+    BACKWARDS_L_BLOCK,
+    STRAIGHT_BLOCK,
+    S_BLOCK,
+    BACKWARDS_S_BLOCK
 };
 
 enum Direction
 {
-	LEFT, 
-	RIGHT, 
-	DOWN	
+    LEFT,
+    RIGHT,
+    DOWN
 };
 
 //  Aaron Cox, 2004 //
