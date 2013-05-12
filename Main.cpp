@@ -639,7 +639,7 @@ bool CheckEntityCollisions(const cSquare& square, Direction dir)
 {
     // Width/height of a square. Also the distance //
     // between two squares if they've collided.    //
-    int distance = SQUARE_MEDIAN * 2;
+    int distance = SQUARE_SIZE;
 
     // Center of the given square //
     int centerX = square.GetCenterX();
@@ -698,40 +698,11 @@ bool CheckWallCollisions(const cSquare& square, Direction dir)
     switch (dir)
     {
     case DOWN:
-        {
-            if ( (y + (SQUARE_MEDIAN*2)) > GAME_AREA_BOTTOM )
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        } break;
-
+        return (y + SQUARE_SIZE > GAME_AREA_BOTTOM);
     case LEFT:
-        {
-            if ( (x - (SQUARE_MEDIAN*2)) < GAME_AREA_LEFT )
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        } break;
-
+        return (x - SQUARE_SIZE < GAME_AREA_LEFT);
     case RIGHT:
-        {
-            if ( (x + (SQUARE_MEDIAN*2)) > GAME_AREA_RIGHT )
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        } break;
+        return (x + SQUARE_SIZE > GAME_AREA_RIGHT);
     }
 
     return false;
@@ -761,7 +732,7 @@ bool CheckRotationCollisions(const cBlock& block)
     block.GetRotatedSquares(rotated_squares);
 
     // Distance between two touching squares //
-    int distance = SQUARE_MEDIAN * 2;
+    int distance = SQUARE_SIZE;
 
     for (int i = 0; i < CBLOCK_NUM_SQUARES; ++i)
     {

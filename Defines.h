@@ -35,6 +35,7 @@
 
 #define SQUARES_PER_ROW  10  // number of squares that fit in a row
 #define SQUARE_MEDIAN    10  // distance from the center of a square to its sides
+#define SQUARE_SIZE    (SQUARE_MEDIAN * 2)   // Width and height of square.
 
 // Starting position of the focus block //
 #define BLOCK_START_X    151

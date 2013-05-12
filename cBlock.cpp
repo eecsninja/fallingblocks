@@ -123,15 +123,15 @@ void cBlock::Move(Direction dir)
     {
     case LEFT:
         {
-            m_CenterX -= SQUARE_MEDIAN * 2;
+            m_CenterX -= SQUARE_SIZE;
         } break;
     case RIGHT:
         {
-            m_CenterX += SQUARE_MEDIAN * 2;
+            m_CenterX += SQUARE_SIZE;
         } break;
     case DOWN:
         {
-            m_CenterY += SQUARE_MEDIAN*2;
+            m_CenterY += SQUARE_SIZE;
         } break;
     }
 

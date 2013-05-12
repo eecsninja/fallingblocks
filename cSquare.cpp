@@ -21,14 +21,14 @@ void cSquare::Draw(SDL_Surface* window) const
 
     // The bitmap of each color of square is arranged in the same order as the
     // block type enums.
-    source.w = SQUARE_MEDIAN * 2;
-    source.h = SQUARE_MEDIAN * 2;
+    source.w = SQUARE_SIZE;
+    source.h = SQUARE_SIZE;
     source.x = 0;
     source.y = m_BlockType * source.h;
 
     // Draw at square's current location. Remember that m_X and m_Y store the center of the square. //
     SDL_Rect destination = { m_CenterX - SQUARE_MEDIAN, m_CenterY - SQUARE_MEDIAN,
-        SQUARE_MEDIAN * 2, SQUARE_MEDIAN * 2 };
+        SQUARE_SIZE, SQUARE_SIZE };
 
     SDL_BlitSurface(m_Bitmap, &source, window, &destination);
 }
@@ -40,17 +40,14 @@ void cSquare::Move(Direction dir)
     switch (dir)
     {
     case LEFT:
-        {
-            m_CenterX -= SQUARE_MEDIAN * 2;
-        } break;
+        m_CenterX -= SQUARE_SIZE;
+        break;
     case RIGHT:
-        {
-            m_CenterX += SQUARE_MEDIAN * 2;
-        } break;
+        m_CenterX += SQUARE_SIZE;
+        break;
     case DOWN:
-        {
-            m_CenterY += SQUARE_MEDIAN*2;
-        } break;
+        m_CenterY += SQUARE_SIZE;
+        break;
     }
 }
 
