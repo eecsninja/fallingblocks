@@ -13,11 +13,6 @@
 cBlock::cBlock(int x, int y, SDL_Surface* bitmap, BlockType type) 
         : m_CenterX(x), m_CenterY(y), m_Type(type)
 {
-    for (int i=0; i<4; i++)
-    {
-        m_Squares[i] = NULL;
-    }
-
     SetupSquares(x, y, bitmap);
 }
 
@@ -32,89 +27,82 @@ void cBlock::SetupSquares(int x, int y, SDL_Surface* bitmap)
     m_CenterX = x;
     m_CenterY = y;
 
-    // Make sure that any current squares are deleted //
-    for (int i=0; i<4; i++)
-    {
-        if (m_Squares[i])
-            delete m_Squares[i];
-    }
-
     switch (m_Type)
     {
     case SQUARE_BLOCK:
         {
             // Upper left //
-            m_Squares[0] = new cSquare(x - SQUARE_MEDIAN, y - SQUARE_MEDIAN, bitmap, m_Type);
+            m_Squares[0] = cSquare(x - SQUARE_MEDIAN, y - SQUARE_MEDIAN, bitmap, m_Type);
             // Lower Left //
-            m_Squares[1] = new cSquare(x - SQUARE_MEDIAN, y + SQUARE_MEDIAN, bitmap, m_Type);
+            m_Squares[1] = cSquare(x - SQUARE_MEDIAN, y + SQUARE_MEDIAN, bitmap, m_Type);
             // Upper right //
-            m_Squares[2] = new cSquare(x + SQUARE_MEDIAN, y - SQUARE_MEDIAN, bitmap, m_Type);
+            m_Squares[2] = cSquare(x + SQUARE_MEDIAN, y - SQUARE_MEDIAN, bitmap, m_Type);
             // Lower right //
-            m_Squares[3] = new cSquare(x + SQUARE_MEDIAN, y + SQUARE_MEDIAN, bitmap, m_Type);
+            m_Squares[3] = cSquare(x + SQUARE_MEDIAN, y + SQUARE_MEDIAN, bitmap, m_Type);
         } break;
     case T_BLOCK:
         {
             // Top //
-            m_Squares[0] = new cSquare(x + SQUARE_MEDIAN, y - SQUARE_MEDIAN, bitmap, m_Type);
+            m_Squares[0] = cSquare(x + SQUARE_MEDIAN, y - SQUARE_MEDIAN, bitmap, m_Type);
             // Middle //
-            m_Squares[1] = new cSquare(x + SQUARE_MEDIAN, y + SQUARE_MEDIAN, bitmap, m_Type);
+            m_Squares[1] = cSquare(x + SQUARE_MEDIAN, y + SQUARE_MEDIAN, bitmap, m_Type);
             // Left //
-            m_Squares[2] = new cSquare(x - SQUARE_MEDIAN, y + SQUARE_MEDIAN, bitmap, m_Type);
+            m_Squares[2] = cSquare(x - SQUARE_MEDIAN, y + SQUARE_MEDIAN, bitmap, m_Type);
             // Right //
-            m_Squares[3] = new cSquare(x + (SQUARE_MEDIAN * 3), y + SQUARE_MEDIAN, bitmap, m_Type);
+            m_Squares[3] = cSquare(x + (SQUARE_MEDIAN * 3), y + SQUARE_MEDIAN, bitmap, m_Type);
         } break;
     case L_BLOCK:
         {
             // |  //
-            m_Squares[0] = new cSquare(x - SQUARE_MEDIAN, y - SQUARE_MEDIAN, bitmap, m_Type);
+            m_Squares[0] = cSquare(x - SQUARE_MEDIAN, y - SQUARE_MEDIAN, bitmap, m_Type);
             // |  //
-            m_Squares[1] = new cSquare(x - SQUARE_MEDIAN, y + SQUARE_MEDIAN, bitmap, m_Type);
+            m_Squares[1] = cSquare(x - SQUARE_MEDIAN, y + SQUARE_MEDIAN, bitmap, m_Type);
             // |_ //
-            m_Squares[2] = new cSquare(x - SQUARE_MEDIAN, y + (SQUARE_MEDIAN * 3), bitmap, m_Type);
+            m_Squares[2] = cSquare(x - SQUARE_MEDIAN, y + (SQUARE_MEDIAN * 3), bitmap, m_Type);
                   // __ //
-            m_Squares[3] = new cSquare(x + SQUARE_MEDIAN, y + (SQUARE_MEDIAN * 3), bitmap, m_Type);
+            m_Squares[3] = cSquare(x + SQUARE_MEDIAN, y + (SQUARE_MEDIAN * 3), bitmap, m_Type);
         } break;
     case BACKWARDS_L_BLOCK:
         {
                 //  | //
-            m_Squares[0] = new cSquare(x + SQUARE_MEDIAN, y - SQUARE_MEDIAN, bitmap, m_Type);
+            m_Squares[0] = cSquare(x + SQUARE_MEDIAN, y - SQUARE_MEDIAN, bitmap, m_Type);
                 //  | //
-            m_Squares[1] = new cSquare(x + SQUARE_MEDIAN, y + SQUARE_MEDIAN, bitmap, m_Type);
+            m_Squares[1] = cSquare(x + SQUARE_MEDIAN, y + SQUARE_MEDIAN, bitmap, m_Type);
                 // _| //
-            m_Squares[2] = new cSquare(x + SQUARE_MEDIAN, y + (SQUARE_MEDIAN * 3), bitmap, m_Type);
+            m_Squares[2] = cSquare(x + SQUARE_MEDIAN, y + (SQUARE_MEDIAN * 3), bitmap, m_Type);
             // __ //
-            m_Squares[3] = new cSquare(x - SQUARE_MEDIAN, y + (SQUARE_MEDIAN * 3), bitmap, m_Type);
+            m_Squares[3] = cSquare(x - SQUARE_MEDIAN, y + (SQUARE_MEDIAN * 3), bitmap, m_Type);
         } break;
     case STRAIGHT_BLOCK:
         {
             // Top //
-            m_Squares[0] = new cSquare(x + SQUARE_MEDIAN, y - (SQUARE_MEDIAN * 3), bitmap, m_Type);
-            m_Squares[1] = new cSquare(x + SQUARE_MEDIAN, y - SQUARE_MEDIAN, bitmap, m_Type);
-            m_Squares[2] = new cSquare(x + SQUARE_MEDIAN, y + SQUARE_MEDIAN, bitmap, m_Type);
-            m_Squares[3] = new cSquare(x + SQUARE_MEDIAN, y + (SQUARE_MEDIAN * 3), bitmap, m_Type);
+            m_Squares[0] = cSquare(x + SQUARE_MEDIAN, y - (SQUARE_MEDIAN * 3), bitmap, m_Type);
+            m_Squares[1] = cSquare(x + SQUARE_MEDIAN, y - SQUARE_MEDIAN, bitmap, m_Type);
+            m_Squares[2] = cSquare(x + SQUARE_MEDIAN, y + SQUARE_MEDIAN, bitmap, m_Type);
+            m_Squares[3] = cSquare(x + SQUARE_MEDIAN, y + (SQUARE_MEDIAN * 3), bitmap, m_Type);
             // Bottom //
         } break;
     case S_BLOCK:
         {
             // Top right //
-            m_Squares[0] = new cSquare(x + (SQUARE_MEDIAN * 3), y - SQUARE_MEDIAN, bitmap, m_Type);
+            m_Squares[0] = cSquare(x + (SQUARE_MEDIAN * 3), y - SQUARE_MEDIAN, bitmap, m_Type);
             // Top middle //
-            m_Squares[1] = new cSquare(x + SQUARE_MEDIAN, y - SQUARE_MEDIAN, bitmap, m_Type);
+            m_Squares[1] = cSquare(x + SQUARE_MEDIAN, y - SQUARE_MEDIAN, bitmap, m_Type);
             // Bottom middle //
-            m_Squares[2] = new cSquare(x + SQUARE_MEDIAN, y + SQUARE_MEDIAN, bitmap, m_Type);
+            m_Squares[2] = cSquare(x + SQUARE_MEDIAN, y + SQUARE_MEDIAN, bitmap, m_Type);
             // Bottom left //
-            m_Squares[3] = new cSquare(x - SQUARE_MEDIAN, y + SQUARE_MEDIAN, bitmap, m_Type);
+            m_Squares[3] = cSquare(x - SQUARE_MEDIAN, y + SQUARE_MEDIAN, bitmap, m_Type);
         } break;
     case BACKWARDS_S_BLOCK:
         {
             // Top left //
-            m_Squares[0] = new cSquare(x - SQUARE_MEDIAN, y - SQUARE_MEDIAN, bitmap, m_Type);
+            m_Squares[0] = cSquare(x - SQUARE_MEDIAN, y - SQUARE_MEDIAN, bitmap, m_Type);
             // Top middle //
-            m_Squares[1] = new cSquare(x + SQUARE_MEDIAN, y - SQUARE_MEDIAN, bitmap, m_Type);
+            m_Squares[1] = cSquare(x + SQUARE_MEDIAN, y - SQUARE_MEDIAN, bitmap, m_Type);
             // Bottom middle //
-            m_Squares[2] = new cSquare(x + SQUARE_MEDIAN, y + SQUARE_MEDIAN, bitmap, m_Type);
+            m_Squares[2] = cSquare(x + SQUARE_MEDIAN, y + SQUARE_MEDIAN, bitmap, m_Type);
             // Bottom right //
-            m_Squares[3] = new cSquare(x + (SQUARE_MEDIAN * 3), y + SQUARE_MEDIAN, bitmap, m_Type);
+            m_Squares[3] = cSquare(x + (SQUARE_MEDIAN * 3), y + SQUARE_MEDIAN, bitmap, m_Type);
         } break;
     }
 }
@@ -124,7 +112,7 @@ void cBlock::Draw(SDL_Surface* Window)
 {
     for (int i=0; i<4; i++)
     {
-        m_Squares[i]->Draw(Window);
+        m_Squares[i].Draw(Window);
     }
 }
 
@@ -149,7 +137,7 @@ void cBlock::Move(Direction dir)
 
     for (int i=0; i<4; i++)
     {
-        m_Squares[i]->Move(dir);
+        m_Squares[i].Move(dir);
     }
 }
 
@@ -160,8 +148,8 @@ void cBlock::Rotate()
 
     for (int i=0; i<4; i++)
     {
-        x1 = m_Squares[i]->GetCenterX();
-        y1 = m_Squares[i]->GetCenterY();
+        x1 = m_Squares[i].GetCenterX();
+        y1 = m_Squares[i].GetCenterY();
 
         x1 -= m_CenterX;
         y1 -= m_CenterY;
@@ -172,8 +160,8 @@ void cBlock::Rotate()
         x2 += m_CenterX;
         y2 += m_CenterY;
 
-        m_Squares[i]->SetCenterX(x2);
-        m_Squares[i]->SetCenterY(y2);
+        m_Squares[i].SetCenterX(x2);
+        m_Squares[i].SetCenterY(y2);
     }
 }
 
@@ -186,8 +174,8 @@ int* cBlock::GetRotatedSquares()
 
     for (int i=0; i<4; i++)
     {
-        x1 = m_Squares[i]->GetCenterX();
-        y1 = m_Squares[i]->GetCenterY();
+        x1 = m_Squares[i].GetCenterX();
+        y1 = m_Squares[i].GetCenterY();
 
         x1 -= m_CenterX;
         y1 -= m_CenterY;
@@ -206,7 +194,7 @@ int* cBlock::GetRotatedSquares()
 }
 
 // This returns an array of pointers to the squares of the block. //
-cSquare** cBlock::GetSquares()
+cSquare* cBlock::GetSquares()
 {
     return m_Squares;
 }

@@ -21,7 +21,7 @@ private:
     BlockType m_Type;
 
     // Array of squares that make up the block //
-    cSquare* m_Squares[4];
+    cSquare m_Squares[4];
 
 public:
     // The constructor just sets the block location and calls SetupSquares //
@@ -45,8 +45,8 @@ public:
     // a rotation and returns an array of those values.      //
     int* GetRotatedSquares();
 
-    // This returns an array of pointers to the squares of the block. //
-    cSquare** GetSquares();
+    // This returns a pointer to the array squares of the block. //
+    cSquare* GetSquares();
 };
 
 //  Aaron Cox, 2004 //

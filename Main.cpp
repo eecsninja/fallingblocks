@@ -36,7 +36,7 @@ SDL_Event           g_Event;             // An SDL event structure for input
 int                   g_Timer;             // Our timer is just an integer
 cBlock*               g_FocusBlock = NULL; // The block the player is controlling
 cBlock*               g_NextBlock  = NULL; // The next block to be the focus block
-vector<cSquare*>   g_OldSquares;        // The squares that no longer form the focus block
+vector<cSquare>       g_OldSquares;        // The squares that have landed.
 int                   g_Score = 0;         // Players current score
 int                   g_Level = 1;         // Current level player is on
 int                   g_FocusBlockSpeed = INITIAL_SPEED; // Speed of the focus block
@@ -140,25 +140,12 @@ void Shutdown()
     // Get pointers to the squares in our focus and next blocks so we can delete them. //
     // We must do this before we delete our blocks so we don't lose references to the squares. //
     // Note that these are pointers to arrays of pointers. //
-    cSquare** temp_array_1 = g_FocusBlock->GetSquares();
-    cSquare** temp_array_2 = g_NextBlock->GetSquares();
+    cSquare* temp_array_1 = g_FocusBlock->GetSquares();
+    cSquare* temp_array_2 = g_NextBlock->GetSquares();
 
     // Delete our blocks //
     delete g_FocusBlock;
     delete g_NextBlock;
-
-    // Delete the temporary arrays of squares //
-    for (int i=0; i<4; i++)
-    {
-        delete temp_array_1[i];
-        delete temp_array_2[i];
-    }
-
-    // Delete the squares that are in the game area //
-    for (int i=0; i<g_OldSquares.size(); i++)
-    {
-        delete g_OldSquares[i];
-    }
 
     // Tell SDL to shutdown and free any resources it was using //
     SDL_Quit();
@@ -255,7 +242,7 @@ void Game()
         // Draw the old squares. //
         for (int i=0; i < g_OldSquares.size(); i++)
         {
-            g_OldSquares[i]->Draw(g_Window);
+            g_OldSquares[i].Draw(g_Window);
         }
 
         // Draw the text for the current level, score, and needed score. //
@@ -701,8 +688,8 @@ bool CheckEntityCollisions(cSquare* square, Direction dir)
     // Iterate through the old squares vector, checking for collisions //
     for (int i=0; i<g_OldSquares.size(); i++)
     {
-        if ( ( abs(centerX - g_OldSquares[i]->GetCenterX() ) < distance ) &&
-             ( abs(centerY - g_OldSquares[i]->GetCenterY() ) < distance ) )
+        if ( ( abs(centerX - g_OldSquares[i].GetCenterX() ) < distance ) &&
+             ( abs(centerY - g_OldSquares[i].GetCenterY() ) < distance ) )
         {
             return true;
         }
@@ -715,12 +702,12 @@ bool CheckEntityCollisions(cSquare* square, Direction dir)
 bool CheckEntityCollisions(cBlock* block, Direction dir)
 {
     // Get an array of the squares that make up the given block //
-    cSquare** temp_array = block->GetSquares();
+    cSquare* temp_array = block->GetSquares();
 
     // Now just call the other CheckEntityCollisions() on each square //
     for (int i=0; i<4; i++)
     {
-        if ( CheckEntityCollisions(temp_array[i], dir) )
+        if ( CheckEntityCollisions(&temp_array[i], dir) )
             return true;
     }
 
@@ -781,12 +768,12 @@ bool CheckWallCollisions(cSquare* square, Direction dir)
 bool CheckWallCollisions(cBlock* block, Direction dir)
 {
     // Get an array of squares that make up the given block //
-    cSquare** temp_array = block->GetSquares();
+    cSquare* temp_array = block->GetSquares();
 
     // Call other CheckWallCollisions() on each square //
     for (int i=0; i<4; i++)
     {
-        if ( CheckWallCollisions(temp_array[i], dir) )
+        if ( CheckWallCollisions(&temp_array[i], dir) )
             return true;
     }
 
@@ -820,8 +807,8 @@ bool CheckRotationCollisions(cBlock* block)
         // Check to see if the block will collide with any squares //
         for (int index=0; index<g_OldSquares.size(); index++)
         {
-            if ( ( abs(temp_array[i*2]   - g_OldSquares[index]->GetCenterX()) < distance ) &&
-                 ( abs(temp_array[i*2+1] - g_OldSquares[index]->GetCenterY()) < distance ) )
+            if ( ( abs(temp_array[i*2]   - g_OldSquares[index].GetCenterX()) < distance ) &&
+                 ( abs(temp_array[i*2+1] - g_OldSquares[index].GetCenterY()) < distance ) )
             {
                 delete temp_array;
                 return true;
@@ -865,7 +852,7 @@ void HandleBottomCollision()
 void ChangeFocusBlock()
 {
     // Get an array of pointers to the focus block squares //
-    cSquare** square_array = g_FocusBlock->GetSquares();
+    cSquare* square_array = g_FocusBlock->GetSquares();
 
     // Add focus block squares to g_OldSquares //
     for (int i=0; i<4; i++)
@@ -903,7 +890,7 @@ int CheckCompletedLines()
     for (int i=0; i<g_OldSquares.size(); i++)
     {
         // Get the row the current square is in //
-        row = (g_OldSquares[i]->GetCenterY() - top) / row_size;
+        row = (g_OldSquares[i].GetCenterY() - top) / row_size;
 
         // Increment the appropriate row counter //
         squares_per_row[row]++;
@@ -921,9 +908,8 @@ int CheckCompletedLines()
             // Find any squares in current row and remove them //
             for (int index=0; index<g_OldSquares.size(); index++)
             {
-                if ( ( (g_OldSquares[index]->GetCenterY() - top) / row_size ) == line )
+                if ( ( (g_OldSquares[index].GetCenterY() - top) / row_size ) == line )
                 {
-                    delete g_OldSquares[index]; // delete the square
                     g_OldSquares.erase(g_OldSquares.begin() + index); // remove it from the vector
                     index--; // make sure we don't skip anything
                 }
@@ -940,12 +926,12 @@ int CheckCompletedLines()
             if (squares_per_row[line] == SQUARES_PER_ROW)
             {
                 // If it was, get the location of it within the game area //
-                row = (g_OldSquares[index]->GetCenterY() - top) / row_size;
+                row = (g_OldSquares[index].GetCenterY() - top) / row_size;
 
                 // Now move any squares above that row down one //
                 if ( row < line )
                 {
-                    g_OldSquares[index]->Move(DOWN);
+                    g_OldSquares[index].Move(DOWN);
                 }
             }
         }
@@ -961,10 +947,6 @@ void CheckWin()
     if (g_Level > NUM_LEVELS)
     {
         // Clear the old squares vector //
-        for (int i=0; i<g_OldSquares.size(); i++)
-        {
-            delete g_OldSquares[i];
-        }
         g_OldSquares.clear();
 
         // Reset score and level //
@@ -993,10 +975,6 @@ void CheckLoss()
     if ( CheckEntityCollisions(g_FocusBlock, DOWN) )
     {
         // Clear the old squares vector //
-        for (int i=0; i<g_OldSquares.size(); i++)
-        {
-            delete g_OldSquares[i];
-        }
         g_OldSquares.clear();
 
         // Reset score and level //
