@@ -5,23 +5,63 @@
 
 #include "LandedSquares.h"
 
-#include "math.h"    // We'll be using the abs() function located in "math.h"
+#include <stdio.h>
 
 #include "Defines.h"
 
-// Draw the squares to |window|.
-void LandedSquares::Draw(SDL_Surface* window) const {
-    for (int i=0; i < squares.size(); i++)
-        squares[i].Draw(window);
+#define abs(x)  ( ((x) >= 0) ? (x) : -(x) )
+
+void LandedSquares::SquareRow::Clear() {
+    for (int x = 0; x < SQUARES_PER_ROW; ++x)
+        squares[x].valid = false;
+    empty = true;
 }
 
-// Iterate through the squares vector, checking for collisions //
+LandedSquares::LandedSquares() : bitmap(NULL) {
+    Clear();
+}
+
+void LandedSquares::Init(SDL_Surface* bitmap) {
+    this->bitmap = bitmap;
+    Clear();
+}
+
+// Draw the squares to |window|.
+void LandedSquares::Draw(SDL_Surface* window) const {
+    for (int y = 0; y < MAX_NUM_LINES; ++y) {
+        const SquareRow& row = *row_ptrs[y];
+        if (row.empty)
+            continue;
+        for (int x = 0; x < SQUARES_PER_ROW; ++x) {
+            const LandedSquare& square = row.squares[x];
+            if (!square.valid)
+                continue;
+            cSquare temp_square(0, 0, bitmap, square.type);
+            temp_square.SetX(GAME_AREA_LEFT + x * SQUARE_SIZE);
+            temp_square.SetY(GAME_AREA_BOTTOM - (y + 1) * SQUARE_SIZE);
+            temp_square.Draw(window);
+        }
+    }
+}
+
+// Iterate through each square of each row, checking for collisions.
 bool LandedSquares::CheckCollision(int center_x, int center_y,
                                    int distance) const {
-    for (int i = 0; i < squares.size(); ++i) {
-        if ((abs(center_x - squares[i].GetCenterX()) < distance) &&
-            (abs(center_y - squares[i].GetCenterY()) < distance)) {
-            return true;
+    for (int y = 0; y < MAX_NUM_LINES; ++y) {
+        const SquareRow& row = *row_ptrs[y];
+        if (row.empty)
+            continue;
+        for (int x = 0; x < SQUARES_PER_ROW; ++x) {
+            const LandedSquare& square = row.squares[x];
+            if (!square.valid)
+                continue;
+            cSquare temp_square(0, 0, bitmap, square.type);
+            temp_square.SetX(GAME_AREA_LEFT + x * SQUARE_SIZE);
+            temp_square.SetY(GAME_AREA_BOTTOM - (y + 1) * SQUARE_SIZE);
+            int dx = center_x - temp_square.GetCenterX();
+            int dy = center_y - temp_square.GetCenterY();
+            if (abs(dx) < distance && abs(dy) < distance)
+                return true;
         }
     }
     return false;
@@ -35,60 +75,68 @@ int LandedSquares::CheckCompletedLines() {
     for (int index = 0; index < MAX_NUM_LINES; index++)
         squares_per_row[index] = 0;
 
-    int row_size   = SQUARE_MEDIAN * 2;                // pixel size of one row
-    int bottom     = GAME_AREA_BOTTOM - SQUARE_MEDIAN; // center of bottom row
-    int top        = bottom - 12 * row_size;           // center of top row
-
     int num_lines = 0; // number of lines cleared
-    int row;           // multipurpose variable
-
 
     // Check for full lines //
-    for (int i = 0; i < squares.size(); ++i) {
-        // Get the row the current square is in //
-        row = (squares[i].GetCenterY() - top) / row_size;
-
-        // Increment the appropriate row counter //
-        squares_per_row[row]++;
+    for (int y = 0; y < MAX_NUM_LINES; ++y) {
+        const SquareRow& row = *row_ptrs[y];
+        if (row.empty)
+            continue;
+        for (int x = 0; x < SQUARES_PER_ROW; ++x) {
+            const LandedSquare& square = row.squares[x];
+            if (!square.valid)
+                continue;
+            // Increment the appropriate row counter //
+            ++squares_per_row[y];
+        }
     }
 
     // Erase any full lines //
     for (int line = 0; line < MAX_NUM_LINES; ++line) {
         // Check for completed lines //
-        if (squares_per_row[line] == SQUARES_PER_ROW) {
-            // Keep track of how many lines have been completed //
-            num_lines++;
+        if (squares_per_row[line] != SQUARES_PER_ROW)
+            continue;
+        // Keep track of how many lines have been completed //
+        num_lines++;
 
-            // Find any squares in current row and remove them //
-            for (int index = 0; index < squares.size(); ++index) {
-                if ( ( (squares[index].GetCenterY() - top) / row_size ) == line )
-                {
-                    squares.erase(squares.begin() + index); // remove it from the vector
-                    index--; // make sure we don't skip anything
-                }
-            }
+        // Clear out the current row.
+        SquareRow& row = *row_ptrs[line];
+        for (int x = 0; x < SQUARES_PER_ROW; ++x)
+            row.squares[x].valid = false;
+        row.empty = true;
+
+        // Move rows above this row down.
+        for (int next_line = line + 1; next_line < MAX_NUM_LINES; ++next_line) {
+            row_ptrs[next_line - 1] = row_ptrs[next_line];
+            squares_per_row[next_line - 1] = squares_per_row[next_line];
         }
-    }
 
-    // Move squares above cleared line down //
-    for (int index = 0; index < squares.size(); ++index) {
-        for (int line = 0; line < MAX_NUM_LINES; ++line) {
-            // Determine if this row was filled //
-            if (squares_per_row[line] == SQUARES_PER_ROW)
-            {
-                // If it was, get the location of it within the game area //
-                row = (squares[index].GetCenterY() - top) / row_size;
+        // Push the empty row to the top.
+        row_ptrs[MAX_NUM_LINES - 1] = &row;
+        squares_per_row[MAX_NUM_LINES - 1] = 0;
 
-                // Now move any squares above that row down one //
-                if ( row < line )
-                {
-                    squares[index].Move(DOWN);
-                }
-            }
-        }
+        // Adjust the line counter by one because they were all shifted down.
+        --line;
     }
 
     return num_lines;
+}
+
+// Add a square that has landed.
+void LandedSquares::Add(const cSquare& square) {
+    int x = (square.GetX() - GAME_AREA_LEFT) / SQUARE_SIZE;
+    int y = (GAME_AREA_BOTTOM - square.GetY() - SQUARE_SIZE) / SQUARE_SIZE;
+    row_ptrs[y]->squares[x].type = square.GetType();
+    row_ptrs[y]->squares[x].valid = true;
+    row_ptrs[y]->empty = false;
+}
+
+// Clear all landed squares.
+void LandedSquares::Clear() {
+    for (int y = 0; y < MAX_NUM_LINES; ++y) {
+        rows[y].Clear();
+        row_ptrs[y] = &rows[y];
+    }
 }
 
 //  Aaron Cox, 2004 //

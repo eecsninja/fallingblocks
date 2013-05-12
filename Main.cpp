@@ -101,6 +101,9 @@ void Init()
     g_Bitmap = SDL_LoadBMP("data/FallingBlocks.bmp");
     g_SquaresBitmap = SDL_LoadBMP("data/squares.bmp");
 
+    // Pass the squares bitmap to the landed squares container.
+    g_OldSquares.Init(g_SquaresBitmap);
+
     // Seed our random number generator //
     srand( time(0) );
 
@@ -812,7 +815,7 @@ void CheckWin()
     // If current level is greater than number of levels, player has won //
     if (g_Level > NUM_LEVELS)
     {
-        // Clear the old squares vector //
+        // Clear the old squares container.
         g_OldSquares.Clear();
 
         // Reset score and level //
@@ -837,7 +840,7 @@ void CheckLoss()
     // game area. If the focus block is stuck now, the game is over.    //
     if ( CheckEntityCollisions(g_FocusBlock, DOWN) )
     {
-        // Clear the old squares vector //
+        // Clear the old squares container.
         g_OldSquares.Clear();
 
         // Reset score and level //

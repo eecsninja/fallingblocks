@@ -45,6 +45,7 @@ public:
     int GetY() const { return m_CenterY - SQUARE_MEDIAN; }
     int GetCenterX() const { return m_CenterX; }
     int GetCenterY() const { return m_CenterY; }
+    BlockType GetType() const { return m_BlockType; }
 
     // Mutators //
     void SetX(int x) { m_CenterX = x + SQUARE_MEDIAN; }
