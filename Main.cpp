@@ -24,7 +24,8 @@ using namespace std;
 
 // Global data //
 StateStack         g_StateStack;        // Our state stack
-SDL_Surface*       g_Bitmap = NULL;     // Our back and squares bitmap
+SDL_Surface*       g_Bitmap = NULL;     // Our back bitmap
+SDL_Surface*   g_SquaresBitmap = NULL;  // Our squares bitmap
 SDL_Surface*       g_Window = NULL;     // Our backbuffer
 SDL_Event           g_Event;             // An SDL event structure for input
 int                   g_Timer;             // Our timer is just an integer
@@ -99,13 +100,14 @@ void Init()
 
     // Fill our bitmap structure with information //
     g_Bitmap = SDL_LoadBMP("data/FallingBlocks.bmp");
+    g_SquaresBitmap = SDL_LoadBMP("data/squares.bmp");
 
     // Seed our random number generator //
     srand( time(0) );
 
     // Initialize blocks and set them to their proper locations. //
-    g_FocusBlock = cBlock(BLOCK_START_X, BLOCK_START_Y, g_Bitmap, (BlockType)(rand()%7));
-    g_NextBlock  = cBlock(NEXT_BLOCK_CIRCLE_X, NEXT_BLOCK_CIRCLE_Y, g_Bitmap, (BlockType)(rand()%7));
+    g_FocusBlock = cBlock(BLOCK_START_X, BLOCK_START_Y, g_SquaresBitmap, (BlockType)(rand()%7));
+    g_NextBlock  = cBlock(NEXT_BLOCK_CIRCLE_X, NEXT_BLOCK_CIRCLE_Y, g_SquaresBitmap, (BlockType)(rand()%7));
 
     // We start by adding a pointer to our exit state, this way //
     // it will be the last thing the player sees of the game.   //
@@ -127,6 +129,7 @@ void Shutdown()
 
     // Free our surfaces //
     SDL_FreeSurface(g_Bitmap);
+    SDL_FreeSurface(g_SquaresBitmap);
     SDL_FreeSurface(g_Window);
 
     // Get pointers to the squares in our focus and next blocks so we can delete them. //
@@ -836,10 +839,10 @@ void ChangeFocusBlock()
     }
 
     g_FocusBlock = g_NextBlock; // set the focus block to the next block
-    g_FocusBlock.SetupSquares(BLOCK_START_X, BLOCK_START_Y, g_Bitmap);
+    g_FocusBlock.SetupSquares(BLOCK_START_X, BLOCK_START_Y, g_SquaresBitmap);
 
     // Set the next block to a new block of random type //
-    g_NextBlock = cBlock(NEXT_BLOCK_CIRCLE_X, NEXT_BLOCK_CIRCLE_Y, g_Bitmap, (BlockType)(rand()%7));
+    g_NextBlock = cBlock(NEXT_BLOCK_CIRCLE_X, NEXT_BLOCK_CIRCLE_Y, g_SquaresBitmap, (BlockType)(rand()%7));
 }
 
 // Return amount of lines cleared or zero if no lines were cleared //

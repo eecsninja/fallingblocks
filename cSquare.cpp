@@ -19,45 +19,12 @@ void cSquare::Draw(SDL_Surface* window) const
 {
     SDL_Rect source;
 
-    // switch statement to determine the location of the square within our bitmap //
-    switch (m_BlockType)
-    {
-    case SQUARE_BLOCK:
-        {
-        SDL_Rect temp = { RED_SQUARE_X, RED_SQUARE_Y, SQUARE_MEDIAN * 2, SQUARE_MEDIAN * 2 };
-        source = temp;
-        } break;
-    case T_BLOCK:
-        {
-        SDL_Rect temp = { PURPLE_SQUARE_X, PURPLE_SQUARE_Y, SQUARE_MEDIAN * 2, SQUARE_MEDIAN * 2 };
-        source = temp;
-        } break;
-    case L_BLOCK:
-        {
-        SDL_Rect temp = { GREY_SQUARE_X, GREY_SQUARE_Y, SQUARE_MEDIAN * 2, SQUARE_MEDIAN * 2 };
-        source = temp;
-        } break;
-    case BACKWARDS_L_BLOCK:
-        {
-        SDL_Rect temp = { BLUE_SQUARE_X, BLUE_SQUARE_Y, SQUARE_MEDIAN * 2, SQUARE_MEDIAN * 2 };
-        source = temp;
-        } break;
-    case STRAIGHT_BLOCK:
-        {
-        SDL_Rect temp = { GREEN_SQUARE_X, GREEN_SQUARE_Y, SQUARE_MEDIAN * 2, SQUARE_MEDIAN * 2 };
-        source = temp;
-        } break;
-    case S_BLOCK:
-        {
-        SDL_Rect temp = { BLACK_SQUARE_X, BLACK_SQUARE_Y, SQUARE_MEDIAN * 2, SQUARE_MEDIAN * 2 };
-        source = temp;
-        } break;
-    case BACKWARDS_S_BLOCK:
-        {
-        SDL_Rect temp = { YELLOW_SQUARE_X, YELLOW_SQUARE_Y, SQUARE_MEDIAN * 2, SQUARE_MEDIAN * 2 };
-        source = temp;
-        } break;
-    }
+    // The bitmap of each color of square is arranged in the same order as the
+    // block type enums.
+    source.w = SQUARE_MEDIAN * 2;
+    source.h = SQUARE_MEDIAN * 2;
+    source.x = 0;
+    source.y = m_BlockType * source.h;
 
     // Draw at square's current location. Remember that m_X and m_Y store the center of the square. //
     SDL_Rect destination = { m_CenterX - SQUARE_MEDIAN, m_CenterY - SQUARE_MEDIAN,

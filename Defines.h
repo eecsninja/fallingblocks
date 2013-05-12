@@ -60,20 +60,4 @@
 #define LEVEL_FIVE_X  300
 #define LEVEL_FIVE_Y  396
 
-// Location within bitmap of colored squares //
-#define RED_SQUARE_X    600
-#define RED_SQUARE_Y    400
-#define PURPLE_SQUARE_X 620
-#define PURPLE_SQUARE_Y 400
-#define GREY_SQUARE_X   640
-#define GREY_SQUARE_Y   400
-#define BLUE_SQUARE_X   660
-#define BLUE_SQUARE_Y   400
-#define GREEN_SQUARE_X  680
-#define GREEN_SQUARE_Y  400
-#define BLACK_SQUARE_X  700
-#define BLACK_SQUARE_Y  400
-#define YELLOW_SQUARE_X 720
-#define YELLOW_SQUARE_Y 400
-
 //  Aaron Cox, 2004 //
