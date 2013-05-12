@@ -764,7 +764,8 @@ bool CheckWallCollisions(const cBlock& block, Direction dir)
 bool CheckRotationCollisions(const cBlock& block)
 {
     // Get an array of values for the locations of the rotated block's squares //
-    int* temp_array = block.GetRotatedSquares();
+    int rotated_squares[CBLOCK_NUM_SQUARES * 2];
+    block.GetRotatedSquares(rotated_squares);
 
     // Distance between two touching squares //
     int distance = SQUARE_MEDIAN * 2;
@@ -772,31 +773,25 @@ bool CheckRotationCollisions(const cBlock& block)
     for (int i = 0; i < CBLOCK_NUM_SQUARES; ++i)
     {
         // Check to see if the block will go out of bounds //
-        if ( (temp_array[i*2] < GAME_AREA_LEFT) || (temp_array[i*2] > GAME_AREA_RIGHT) )
-        {
-            delete temp_array;
+        if ( (rotated_squares[i*2] < GAME_AREA_LEFT) ||
+             (rotated_squares[i*2] > GAME_AREA_RIGHT) ) {
             return true;
         }
 
-        if ( temp_array[i*2+1] > GAME_AREA_BOTTOM )
-        {
-            delete temp_array;
+        if ( rotated_squares[i*2+1] > GAME_AREA_BOTTOM )
             return true;
-        }
 
         // Check to see if the block will collide with any squares //
         for (int index=0; index<g_OldSquares.size(); index++)
         {
-            if ( ( abs(temp_array[i*2]   - g_OldSquares[index].GetCenterX()) < distance ) &&
-                 ( abs(temp_array[i*2+1] - g_OldSquares[index].GetCenterY()) < distance ) )
+            if ( ( abs(rotated_squares[i*2]   - g_OldSquares[index].GetCenterX()) < distance ) &&
+                 ( abs(rotated_squares[i*2+1] - g_OldSquares[index].GetCenterY()) < distance ) )
             {
-                delete temp_array;
                 return true;
             }
         }
     }
 
-    delete temp_array;
     return false;
 }
 

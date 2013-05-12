@@ -47,8 +47,8 @@ public:
     void Rotate();
 
     // This function gets the locations of the squares after //
-    // a rotation and returns an array of those values.      //
-    int* GetRotatedSquares() const;
+    // a rotation and stores those values in |array|.        //
+    void GetRotatedSquares(int *array) const;
 
     // This returns a pointer to the array squares of the block. //
     const cSquare* GetSquares() const;

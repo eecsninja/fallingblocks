@@ -166,10 +166,9 @@ void cBlock::Rotate()
 }
 
 // This function gets the locations of the squares after //
-// a rotation and returns an array of those values.      //
-int* cBlock::GetRotatedSquares() const
+// a rotation and stores those values in |array|.        //
+void cBlock::GetRotatedSquares(int* array) const
 {
-    int* temp_array = new int[8];
     int x1, y1, x2, y2;
 
     for (int i=0; i < CBLOCK_NUM_SQUARES; ++i)
@@ -186,11 +185,9 @@ int* cBlock::GetRotatedSquares() const
         x2 += m_CenterX;
         y2 += m_CenterY;
 
-        temp_array[i*2]   = x2;
-        temp_array[i*2+1] = y2;
+        array[i*2]   = x2;
+        array[i*2+1] = y2;
     }
-
-    return temp_array;
 }
 
 // This returns an array of pointers to the squares of the block. //
