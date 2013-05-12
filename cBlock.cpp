@@ -108,7 +108,7 @@ void cBlock::SetupSquares(int x, int y, SDL_Surface* bitmap)
 }
 
 // Draw() simply iterates through the squares and calls their Draw() functions. //
-void cBlock::Draw(SDL_Surface* Window)
+void cBlock::Draw(SDL_Surface* Window) const
 {
     for (int i = 0; i < CBLOCK_NUM_SQUARES; ++i)
     {
@@ -167,7 +167,7 @@ void cBlock::Rotate()
 
 // This function gets the locations of the squares after //
 // a rotation and returns an array of those values.      //
-int* cBlock::GetRotatedSquares()
+int* cBlock::GetRotatedSquares() const
 {
     int* temp_array = new int[8];
     int x1, y1, x2, y2;
@@ -194,7 +194,7 @@ int* cBlock::GetRotatedSquares()
 }
 
 // This returns an array of pointers to the squares of the block. //
-cSquare* cBlock::GetSquares()
+const cSquare* cBlock::GetSquares() const
 {
     return m_Squares;
 }

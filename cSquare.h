@@ -34,15 +34,15 @@ public:
     cSquare(int x, int y, SDL_Surface* bitmap, BlockType type);
 
     // Draw() takes a pointer to the surface to draw to (our window) //
-    void Draw(SDL_Surface* window);
+    void Draw(SDL_Surface* window) const;
 
     // Remember, SQUARE_MEDIAN represents the distance from the square's center to //
     // its sides. SQUARE_MEDIAN*2 gives us the width and height of our squares.    //
     void Move(Direction dir);
 
     // Accessors //
-    int GetCenterX() { return m_CenterX; }
-    int GetCenterY() { return m_CenterY; }
+    int GetCenterX() const { return m_CenterX; }
+    int GetCenterY() const { return m_CenterY; }
 
     // Mutators //
     void SetCenterX(int x) { m_CenterX = x; }

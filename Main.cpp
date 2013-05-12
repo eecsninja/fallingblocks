@@ -28,8 +28,8 @@ SDL_Surface*       g_Bitmap = NULL;     // Our back and squares bitmap
 SDL_Surface*       g_Window = NULL;     // Our backbuffer
 SDL_Event           g_Event;             // An SDL event structure for input
 int                   g_Timer;             // Our timer is just an integer
-cBlock*               g_FocusBlock = NULL; // The block the player is controlling
-cBlock*               g_NextBlock  = NULL; // The next block to be the focus block
+cBlock                g_FocusBlock;     // The block the player is controlling
+cBlock                g_NextBlock;      // The next block to be the focus block
 vector<cSquare>       g_OldSquares;        // The squares that have landed.
 int                   g_Score = 0;         // Players current score
 int                   g_Level = 1;         // Current level player is on
@@ -55,11 +55,11 @@ void HandleMenuInput();
 void HandleGameInput();
 void HandleExitInput();
 void HandleWinLoseInput();
-bool CheckEntityCollisions(cSquare* square, Direction dir);
-bool CheckWallCollisions(cSquare* square, Direction dir);
-bool CheckEntityCollisions(cBlock* block, Direction dir);
-bool CheckWallCollisions(cBlock* block, Direction dir);
-bool CheckRotationCollisions(cBlock* block);
+bool CheckEntityCollisions(const cSquare& square, Direction dir);
+bool CheckWallCollisions(const cSquare& square, Direction dir);
+bool CheckEntityCollisions(const cBlock& block, Direction dir);
+bool CheckWallCollisions(const cBlock& block, Direction dir);
+bool CheckRotationCollisions(const cBlock& block);
 void CheckWin();
 void CheckLoss();
 void HandleBottomCollision();
@@ -104,8 +104,8 @@ void Init()
     srand( time(0) );
 
     // Initialize blocks and set them to their proper locations. //
-    g_FocusBlock = new cBlock(BLOCK_START_X, BLOCK_START_Y, g_Bitmap, (BlockType)(rand()%7));
-    g_NextBlock  = new cBlock(NEXT_BLOCK_CIRCLE_X, NEXT_BLOCK_CIRCLE_Y, g_Bitmap, (BlockType)(rand()%7));
+    g_FocusBlock = cBlock(BLOCK_START_X, BLOCK_START_Y, g_Bitmap, (BlockType)(rand()%7));
+    g_NextBlock  = cBlock(NEXT_BLOCK_CIRCLE_X, NEXT_BLOCK_CIRCLE_Y, g_Bitmap, (BlockType)(rand()%7));
 
     // We start by adding a pointer to our exit state, this way //
     // it will be the last thing the player sees of the game.   //
@@ -132,12 +132,8 @@ void Shutdown()
     // Get pointers to the squares in our focus and next blocks so we can delete them. //
     // We must do this before we delete our blocks so we don't lose references to the squares. //
     // Note that these are pointers to arrays of pointers. //
-    cSquare* temp_array_1 = g_FocusBlock->GetSquares();
-    cSquare* temp_array_2 = g_NextBlock->GetSquares();
-
-    // Delete our blocks //
-    delete g_FocusBlock;
-    delete g_NextBlock;
+    const cSquare* temp_array_1 = g_FocusBlock.GetSquares();
+    const cSquare* temp_array_2 = g_NextBlock.GetSquares();
 
     // Tell SDL to shutdown and free any resources it was using //
     SDL_Quit();
@@ -197,7 +193,7 @@ void Game()
             // Always check for collisions before moving anything //
             if ( !CheckWallCollisions(g_FocusBlock, DOWN) && !CheckEntityCollisions(g_FocusBlock, DOWN) )
             {
-                g_FocusBlock->Move(DOWN); // move the focus block
+                g_FocusBlock.Move(DOWN); // move the focus block
                 force_down_counter = 0;   // reset our counter
             }
         }
@@ -228,8 +224,8 @@ void Game()
         DrawBackground();
 
         // Draw the focus block and next block. //
-        g_FocusBlock->Draw(g_Window);
-        g_NextBlock->Draw(g_Window);
+        g_FocusBlock.Draw(g_Window);
+        g_NextBlock.Draw(g_Window);
 
         // Draw the old squares. //
         for (int i=0; i < g_OldSquares.size(); i++)
@@ -486,7 +482,7 @@ void HandleGameInput()
                 // Check collisions before rotating //
                 if (!CheckRotationCollisions(g_FocusBlock))
                 {
-                    g_FocusBlock->Rotate();
+                    g_FocusBlock.Rotate();
                 }
             }
 
@@ -529,7 +525,7 @@ void HandleGameInput()
         if ( !CheckWallCollisions(g_FocusBlock, DOWN) &&
              !CheckEntityCollisions(g_FocusBlock, DOWN) )
         {
-            g_FocusBlock->Move(DOWN);
+            g_FocusBlock.Move(DOWN);
         }
     }
     if (left_pressed)
@@ -537,7 +533,7 @@ void HandleGameInput()
         if ( !CheckWallCollisions(g_FocusBlock, LEFT) &&
              !CheckEntityCollisions(g_FocusBlock, LEFT) )
         {
-            g_FocusBlock->Move(LEFT);
+            g_FocusBlock.Move(LEFT);
         }
     }
     if (right_pressed)
@@ -545,7 +541,7 @@ void HandleGameInput()
         if ( !CheckWallCollisions(g_FocusBlock, RIGHT) &&
              !CheckEntityCollisions(g_FocusBlock, RIGHT) )
         {
-            g_FocusBlock->Move(RIGHT);
+            g_FocusBlock.Move(RIGHT);
         }
     }
 }
@@ -640,15 +636,15 @@ void HandleWinLoseInput()
 }
 
 // Check collisions between a given square and the squares in g_OldSquares //
-bool CheckEntityCollisions(cSquare* square, Direction dir)
+bool CheckEntityCollisions(const cSquare& square, Direction dir)
 {
     // Width/height of a square. Also the distance //
     // between two squares if they've collided.    //
     int distance = SQUARE_MEDIAN * 2;
 
     // Center of the given square //
-    int centerX = square->GetCenterX();
-    int centerY = square->GetCenterY();
+    int centerX = square.GetCenterX();
+    int centerY = square.GetCenterY();
 
     // Determine the location of the square after moving //
     switch (dir)
@@ -683,15 +679,15 @@ bool CheckEntityCollisions(cSquare* square, Direction dir)
 }
 
 // Check collisions between a given block and the squares in g_OldSquares //
-bool CheckEntityCollisions(cBlock* block, Direction dir)
+bool CheckEntityCollisions(const cBlock& block, Direction dir)
 {
     // Get an array of the squares that make up the given block //
-    cSquare* temp_array = block->GetSquares();
+    const cSquare* temp_array = block.GetSquares();
 
     // Now just call the other CheckEntityCollisions() on each square //
     for (int i = 0; i < CBLOCK_NUM_SQUARES; ++i)
     {
-        if ( CheckEntityCollisions(&temp_array[i], dir) )
+        if ( CheckEntityCollisions(temp_array[i], dir) )
             return true;
     }
 
@@ -699,11 +695,11 @@ bool CheckEntityCollisions(cBlock* block, Direction dir)
 }
 
 // Check collisions between a given square and the sides of the game area //
-bool CheckWallCollisions(cSquare* square, Direction dir)
+bool CheckWallCollisions(const cSquare& square, Direction dir)
 {
     // Get the center of the square //
-    int x = square->GetCenterX();
-    int y = square->GetCenterY();
+    int x = square.GetCenterX();
+    int y = square.GetCenterY();
 
     // Get the location of the square after moving and see if its out of bounds //
     switch (dir)
@@ -749,15 +745,15 @@ bool CheckWallCollisions(cSquare* square, Direction dir)
 }
 
 // Check for collisions between a given block a the sides of the game area //
-bool CheckWallCollisions(cBlock* block, Direction dir)
+bool CheckWallCollisions(const cBlock& block, Direction dir)
 {
     // Get an array of squares that make up the given block //
-    cSquare* temp_array = block->GetSquares();
+    const cSquare* temp_array = block.GetSquares();
 
     // Call other CheckWallCollisions() on each square //
     for (int i = 0; i < CBLOCK_NUM_SQUARES; ++i)
     {
-        if ( CheckWallCollisions(&temp_array[i], dir) )
+        if ( CheckWallCollisions(temp_array[i], dir) )
             return true;
     }
 
@@ -765,10 +761,10 @@ bool CheckWallCollisions(cBlock* block, Direction dir)
 }
 
 // Check for collisions when a block is rotated //
-bool CheckRotationCollisions(cBlock* block)
+bool CheckRotationCollisions(const cBlock& block)
 {
     // Get an array of values for the locations of the rotated block's squares //
-    int* temp_array = block->GetRotatedSquares();
+    int* temp_array = block.GetRotatedSquares();
 
     // Distance between two touching squares //
     int distance = SQUARE_MEDIAN * 2;
@@ -836,7 +832,7 @@ void HandleBottomCollision()
 void ChangeFocusBlock()
 {
     // Get an array of pointers to the focus block squares //
-    cSquare* square_array = g_FocusBlock->GetSquares();
+    const cSquare* square_array = g_FocusBlock.GetSquares();
 
     // Add focus block squares to g_OldSquares //
     for (int i = 0; i < CBLOCK_NUM_SQUARES; ++i)
@@ -844,12 +840,11 @@ void ChangeFocusBlock()
         g_OldSquares.push_back(square_array[i]);
     }
 
-    delete g_FocusBlock;        // delete the current focus block
     g_FocusBlock = g_NextBlock; // set the focus block to the next block
-    g_FocusBlock->SetupSquares(BLOCK_START_X, BLOCK_START_Y, g_Bitmap);
+    g_FocusBlock.SetupSquares(BLOCK_START_X, BLOCK_START_Y, g_Bitmap);
 
     // Set the next block to a new block of random type //
-    g_NextBlock = new cBlock(NEXT_BLOCK_CIRCLE_X, NEXT_BLOCK_CIRCLE_Y, g_Bitmap, (BlockType)(rand()%7));
+    g_NextBlock = cBlock(NEXT_BLOCK_CIRCLE_X, NEXT_BLOCK_CIRCLE_Y, g_Bitmap, (BlockType)(rand()%7));
 }
 
 // Return amount of lines cleared or zero if no lines were cleared //

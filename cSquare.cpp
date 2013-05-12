@@ -15,7 +15,7 @@ cSquare::cSquare(int x, int y, SDL_Surface* bitmap, BlockType type)
 }
 
 // Draw() takes a pointer to the surface to draw to (our window) //
-void cSquare::Draw(SDL_Surface* window)
+void cSquare::Draw(SDL_Surface* window) const
 {
     SDL_Rect source;
 

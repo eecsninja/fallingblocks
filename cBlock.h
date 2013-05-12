@@ -26,6 +26,9 @@ private:
     cSquare m_Squares[CBLOCK_NUM_SQUARES];
 
 public:
+    // Default constructor.
+    cBlock() {}
+
     // The constructor just sets the block location and calls SetupSquares //
     cBlock(int x, int y, SDL_Surface* bitmap, BlockType type);
 
@@ -35,7 +38,7 @@ public:
     void SetupSquares(int x, int y, SDL_Surface* bitmap);
 
     // Draw() simply iterates through the squares and calls their Draw() functions. //
-    void Draw(SDL_Surface* Window);
+    void Draw(SDL_Surface* Window) const;
 
     // Move() simply changes the block's center and calls the squares' move functions. //
     void Move(Direction dir);
@@ -45,10 +48,10 @@ public:
 
     // This function gets the locations of the squares after //
     // a rotation and returns an array of those values.      //
-    int* GetRotatedSquares();
+    int* GetRotatedSquares() const;
 
     // This returns a pointer to the array squares of the block. //
-    cSquare* GetSquares();
+    const cSquare* GetSquares() const;
 };
 
 //  Aaron Cox, 2004 //
