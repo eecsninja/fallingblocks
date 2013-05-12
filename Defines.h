@@ -27,6 +27,8 @@
 #define INITIAL_SPEED    60  // initial interval at which focus block moves down
 #define SPEED_CHANGE     10  // the above interval is reduced by this much each level
 
+#define MAX_NUM_LINES    13  // Number of lines of squares before full.
+
 // Amount of time player has to move the focus block when its bottom collides with something. //
 // Measured in number of frames. At 30 fps, 15 frames will give the player half a second.     //
 #define SLIDE_TIME       15

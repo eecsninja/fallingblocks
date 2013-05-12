@@ -9,9 +9,7 @@
 #pragma comment(lib, "SDLmain.lib")
 #pragma comment(lib, "SDL_TTF.lib")
 
-#include <vector>    // An STL vector will store the squares that are not part of the focus block
 #include "time.h"    // We use time(), located in "time.h", to seed our random generator
-#include "math.h"    // We'll be using the abs() function located in "math.h"
 #include "SDL.h"     // Main SDL header
 #include "SDL_TTF.h" // True Type Font header
 #include "Defines.h" // Our defines header
@@ -19,6 +17,7 @@
 #include "cBlock.h"  // Contains the class that represents a game block
 
 #include "StateStack.h"   // Replaces stack<StatePointer>.
+#include "LandedSquares.h"   // Replaces vector<cSquare>.
 
 using namespace std;
 
@@ -31,7 +30,7 @@ SDL_Event           g_Event;             // An SDL event structure for input
 int                   g_Timer;             // Our timer is just an integer
 cBlock                g_FocusBlock;     // The block the player is controlling
 cBlock                g_NextBlock;      // The next block to be the focus block
-vector<cSquare>       g_OldSquares;        // The squares that have landed.
+LandedSquares         g_OldSquares;        // The squares that have landed.
 int                   g_Score = 0;         // Players current score
 int                   g_Level = 1;         // Current level player is on
 int                   g_FocusBlockSpeed = INITIAL_SPEED; // Speed of the focus block
@@ -231,10 +230,7 @@ void Game()
         g_NextBlock.Draw(g_Window);
 
         // Draw the old squares. //
-        for (int i=0; i < g_OldSquares.size(); i++)
-        {
-            g_OldSquares[i].Draw(g_Window);
-        }
+        g_OldSquares.Draw(g_Window);
 
         // Draw the text for the current level, score, and needed score. //
 
@@ -668,15 +664,9 @@ bool CheckEntityCollisions(const cSquare& square, Direction dir)
         } break;
     }
 
-    // Iterate through the old squares vector, checking for collisions //
-    for (int i=0; i<g_OldSquares.size(); i++)
-    {
-        if ( ( abs(centerX - g_OldSquares[i].GetCenterX() ) < distance ) &&
-             ( abs(centerY - g_OldSquares[i].GetCenterY() ) < distance ) )
-        {
-            return true;
-        }
-    }
+    // Check collision against landed squares //
+    if (g_OldSquares.CheckCollision(centerX, centerY, distance))
+        return true;
 
     return false;
 }
@@ -785,13 +775,9 @@ bool CheckRotationCollisions(const cBlock& block)
             return true;
 
         // Check to see if the block will collide with any squares //
-        for (int index=0; index<g_OldSquares.size(); index++)
-        {
-            if ( ( abs(rotated_squares[i*2]   - g_OldSquares[index].GetCenterX()) < distance ) &&
-                 ( abs(rotated_squares[i*2+1] - g_OldSquares[index].GetCenterY()) < distance ) )
-            {
-                return true;
-            }
+        if (g_OldSquares.CheckCollision(rotated_squares[i*2],
+                                        rotated_squares[i*2+1], distance)) {
+            return true;
         }
     }
 
@@ -834,9 +820,7 @@ void ChangeFocusBlock()
 
     // Add focus block squares to g_OldSquares //
     for (int i = 0; i < CBLOCK_NUM_SQUARES; ++i)
-    {
-        g_OldSquares.push_back(square_array[i]);
-    }
+        g_OldSquares.Add(square_array[i]);
 
     g_FocusBlock = g_NextBlock; // set the focus block to the next block
     g_FocusBlock.SetupSquares(BLOCK_START_X, BLOCK_START_Y, g_SquaresBitmap);
@@ -848,73 +832,7 @@ void ChangeFocusBlock()
 // Return amount of lines cleared or zero if no lines were cleared //
 int CheckCompletedLines()
 {
-    // Store the amount of squares in each row in an array //
-    int squares_per_row[13];
-
-    // The compiler will fill the array with junk values if we don't do this //
-    for (int index=0; index<13; index++)
-        squares_per_row[index] = 0;
-
-    int row_size   = SQUARE_MEDIAN * 2;                // pixel size of one row
-    int bottom     = GAME_AREA_BOTTOM - SQUARE_MEDIAN; // center of bottom row
-    int top        = bottom - 12 * row_size;           // center of top row
-
-    int num_lines = 0; // number of lines cleared
-    int row;           // multipurpose variable
-
-
-    // Check for full lines //
-    for (int i=0; i<g_OldSquares.size(); i++)
-    {
-        // Get the row the current square is in //
-        row = (g_OldSquares[i].GetCenterY() - top) / row_size;
-
-        // Increment the appropriate row counter //
-        squares_per_row[row]++;
-    }
-
-    // Erase any full lines //
-    for (int line=0; line<13; line++)
-    {
-        // Check for completed lines //
-        if (squares_per_row[line] == SQUARES_PER_ROW)
-        {
-            // Keep track of how many lines have been completed //
-            num_lines++;
-
-            // Find any squares in current row and remove them //
-            for (int index=0; index<g_OldSquares.size(); index++)
-            {
-                if ( ( (g_OldSquares[index].GetCenterY() - top) / row_size ) == line )
-                {
-                    g_OldSquares.erase(g_OldSquares.begin() + index); // remove it from the vector
-                    index--; // make sure we don't skip anything
-                }
-            }
-        }
-    }
-
-    // Move squares above cleared line down //
-    for (int index=0; index<g_OldSquares.size(); index++)
-    {
-        for (int line=0; line<13; line++)
-        {
-            // Determine if this row was filled //
-            if (squares_per_row[line] == SQUARES_PER_ROW)
-            {
-                // If it was, get the location of it within the game area //
-                row = (g_OldSquares[index].GetCenterY() - top) / row_size;
-
-                // Now move any squares above that row down one //
-                if ( row < line )
-                {
-                    g_OldSquares[index].Move(DOWN);
-                }
-            }
-        }
-    }
-
-    return num_lines;
+    return g_OldSquares.CheckCompletedLines();
 }
 
 // Check to see if player has won. Handle winning condition if needed. //
@@ -924,7 +842,7 @@ void CheckWin()
     if (g_Level > NUM_LEVELS)
     {
         // Clear the old squares vector //
-        g_OldSquares.clear();
+        g_OldSquares.Clear();
 
         // Reset score and level //
         g_Score = 0;
@@ -949,7 +867,7 @@ void CheckLoss()
     if ( CheckEntityCollisions(g_FocusBlock, DOWN) )
     {
         // Clear the old squares vector //
-        g_OldSquares.clear();
+        g_OldSquares.Clear();
 
         // Reset score and level //
         g_Score = 0;
