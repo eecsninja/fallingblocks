@@ -41,10 +41,14 @@ public:
     void Move(Direction dir);
 
     // Accessors //
+    int GetX() const { return m_CenterX - SQUARE_MEDIAN; }
+    int GetY() const { return m_CenterY - SQUARE_MEDIAN; }
     int GetCenterX() const { return m_CenterX; }
     int GetCenterY() const { return m_CenterY; }
 
     // Mutators //
+    void SetX(int x) { m_CenterX = x + SQUARE_MEDIAN; }
+    void SetY(int y) { m_CenterY = y + SQUARE_MEDIAN; }
     void SetCenterX(int x) { m_CenterX = x; }
     void SetCenterY(int y) { m_CenterY = y; }
 };
