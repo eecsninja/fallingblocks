@@ -9,7 +9,6 @@
 #pragma comment(lib, "SDLmain.lib")
 #pragma comment(lib, "SDL_TTF.lib")
 
-#include <stack>     // We'll use the STL stack to store our function pointers
 #include <vector>    // An STL vector will store the squares that are not part of the focus block
 #include "time.h"    // We use time(), located in "time.h", to seed our random generator
 #include "math.h"    // We'll be using the abs() function located in "math.h"
@@ -19,17 +18,12 @@
 #include "Enums.h"   // Our enums header
 #include "cBlock.h"  // Contains the class that represents a game block
 
+#include "StateStack.h"   // Replaces stack<StatePointer>.
+
 using namespace std;
 
-// The STL stack can't take a function pointer as a type //
-// so we encapsulate a function pointer within a struct. //
-struct StateStruct
-{
-    void (*StatePointer)();
-};
-
 // Global data //
-stack<StateStruct> g_StateStack;        // Our state stack
+StateStack         g_StateStack;        // Our state stack
 SDL_Surface*       g_Bitmap = NULL;     // Our back and squares bitmap
 SDL_Surface*       g_Window = NULL;     // Our backbuffer
 SDL_Event           g_Event;             // An SDL event structure for input
@@ -79,7 +73,8 @@ int main(int argc, char **argv)
     // Our game loop is just a while loop that breaks when our state stack is empty //
     while (!g_StateStack.empty())
     {
-        g_StateStack.top().StatePointer();
+        StatePointer top_ptr = g_StateStack.top();
+        top_ptr();
     }
 
     Shutdown();
@@ -114,14 +109,11 @@ void Init()
 
     // We start by adding a pointer to our exit state, this way //
     // it will be the last thing the player sees of the game.   //
-    StateStruct state;
-    state.StatePointer = Exit;
-    g_StateStack.push(state);
+    g_StateStack.push(Exit);
 
     // Then we add a pointer to our menu state, this will //
     // be the first thing the player sees of our game.    //
-    state.StatePointer = Menu;
-    g_StateStack.push(state);
+    g_StateStack.push(Menu);
 
     // Initialize the true type font library //
     TTF_Init();
@@ -448,9 +440,7 @@ void HandleMenuInput()
             // Start Game //
             if (g_Event.key.keysym.sym == SDLK_g)
             {
-                StateStruct temp;
-                temp.StatePointer = Game;
-                g_StateStack.push(temp);
+                g_StateStack.push(Game);
                 return;  // this state is done, exit the function
             }
         }
@@ -597,9 +587,7 @@ void HandleExitInput()
             // No //
             if (g_Event.key.keysym.sym == SDLK_n)
             {
-                StateStruct temp;
-                temp.StatePointer = Menu;
-                g_StateStack.push(temp);
+                g_StateStack.push(Menu);
                 return;  // this state is done, exit the function
             }
         }
@@ -643,12 +631,8 @@ void HandleWinLoseInput()
             {
                 g_StateStack.pop();
 
-                StateStruct temp;
-                temp.StatePointer = Exit;
-                g_StateStack.push(temp);
-
-                temp.StatePointer = Menu;
-                g_StateStack.push(temp);
+                g_StateStack.push(Exit);
+                g_StateStack.push(Menu);
                 return;
             }
         }
@@ -960,10 +944,7 @@ void CheckWin()
         }
 
         // Push the victory state onto the stack //
-        StateStruct win;
-        win.StatePointer = GameWon;
-
-        g_StateStack.push(win);
+        g_StateStack.push(GameWon);
     }
 }
 
@@ -988,10 +969,7 @@ void CheckLoss()
         }
 
         // Push the losing state onto the stack //
-        StateStruct lose;
-        lose.StatePointer = GameLost;
-
-        g_StateStack.push(lose);
+        g_StateStack.push(GameLost);
     }
 }
 
