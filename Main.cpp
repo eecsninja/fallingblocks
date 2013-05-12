@@ -55,7 +55,8 @@ void GameLost();
 // Helper functions for the main game state functions //
 void DrawBackground();
 void ClearScreen();
-void DisplayText(string text, int x, int y, int size, int fR, int fG, int fB, int bR, int bG, int bB);
+void DisplayText(const char* text, int x, int y, int size,
+                 int fR, int fG, int fB, int bR, int bG, int bB);
 void HandleMenuInput();
 void HandleGameInput();
 void HandleExitInput();
@@ -262,19 +263,13 @@ void Game()
         // We need to display the text ("Score:", "Level:", "Needed Score:") as well as the //
         // associated value. To do this, we use the string function append(). This function //
         // takes a char string so we call itoa() and store the char string in temp.         //
-        char temp[256];
+        char score[256];
+        char nextscore[256];
+        char level[256];
 
-        string score = "Score: ";
-        itoa(g_Score, temp, 10);
-        score.append( temp );
-
-        string nextscore = "Needed Score: ";
-        itoa(g_Level*POINTS_PER_LEVEL, temp, 10);
-        nextscore.append(temp);
-
-        string level = "Level: ";
-        itoa(g_Level, temp, 10);
-        level.append(temp);
+        sprintf(score, "Score: %u", g_Score);
+        sprintf(nextscore, "Needed score: %u", g_Level*POINTS_PER_LEVEL);
+        sprintf(level, "Level: %u", g_Level);
 
         DisplayText(score, SCORE_RECT_X, SCORE_RECT_Y, 8, 0, 0, 0, 255, 255, 255);
         DisplayText(nextscore, NEEDED_SCORE_RECT_X, NEEDED_SCORE_RECT_Y, 8, 0, 0, 0, 255, 255, 255);
@@ -405,7 +400,7 @@ void ClearScreen()
 // This function displays text to the screen. It takes the text //
 // to be displayed, the location to display it, the size of the //
 // text, and the color of the text and background.              //
-void DisplayText(string text, int x, int y, int size, int fR, int fG, int fB, int bR, int bG, int bB)
+void DisplayText(const char* text, int x, int y, int size, int fR, int fG, int fB, int bR, int bG, int bB)
 {
     // Open our font and set its size to the given parameter //
     TTF_Font* font = TTF_OpenFont("arial.ttf", size);
@@ -415,7 +410,7 @@ void DisplayText(string text, int x, int y, int size, int fR, int fG, int fB, in
 
     // This renders our text to a temporary surface. There //
     // are other text functions, but this one looks nicer. //
-    SDL_Surface* temp = TTF_RenderText_Shaded(font, text.c_str(), foreground, background);
+    SDL_Surface* temp = TTF_RenderText_Shaded(font, text, foreground, background);
 
     // A structure storing the destination of our text. //
     SDL_Rect destination = { x, y, 0, 0 };
