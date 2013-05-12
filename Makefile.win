@@ -5,8 +5,8 @@ CPP  = g++.exe
 CC   = gcc.exe
 WINDRES = windres.exe
 RES  = 
-OBJ  = Main.o $(RES)
-LINKOBJ  = Main.o $(RES)
+OBJ  = Main.o cBlock.o cSquare.o $(RES)
+LINKOBJ  = Main.o cBlock.o cSquare.o $(RES)
 LIBS =  -L"C:/Dev-Cpp/lib" -lmingw32  -lSDLmain -lSDL -lSDL_ttf  
 INCS =  -I"C:/Dev-Cpp/include"  -I"C:/Dev-Cpp/include/SDL" 
 CXXINCS =  -I"C:/Dev-Cpp/lib/gcc/mingw32/3.4.2/include"  -I"C:/Dev-Cpp/include/c++/3.4.2/backward"  -I"C:/Dev-Cpp/include/c++/3.4.2/mingw32"  -I"C:/Dev-Cpp/include/c++/3.4.2"  -I"C:/Dev-Cpp/include"  -I"C:/Dev-Cpp/include/SDL" 
@@ -28,3 +28,9 @@ $(BIN): $(OBJ)
 
 Main.o: Main.cpp
 	$(CPP) -c Main.cpp -o Main.o $(CXXFLAGS)
+
+cBlock.o: cBlock.cpp
+	$(CPP) -c cBlock.cpp -o cBlock.o $(CXXFLAGS)
+
+cSquare.o: cSquare.cpp
+	$(CPP) -c cSquare.cpp -o cSquare.o $(CXXFLAGS)
