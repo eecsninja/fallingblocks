@@ -64,6 +64,15 @@ void HandleBottomCollision();
 void ChangeFocusBlock();
 int CheckCompletedLines();
 
+// These are used to enumerate the various game state functions.
+enum GameStates {
+    GAME_STATE_EXIT,
+    GAME_STATE_MENU,
+    GAME_STATE_GAME,
+    GAME_STATE_WON,
+    GAME_STATE_LOST,
+};
+
 int main(int argc, char **argv)
 {
     Init();
@@ -71,8 +80,24 @@ int main(int argc, char **argv)
     // Our game loop is just a while loop that breaks when our state stack is empty //
     while (!g_StateStack.empty())
     {
-        StatePointer top_ptr = g_StateStack.top();
-        top_ptr();
+        int state = g_StateStack.top();
+        switch(state) {
+        case GAME_STATE_EXIT:
+            Exit();
+            break;
+        case GAME_STATE_MENU:
+            Menu();
+            break;
+        case GAME_STATE_GAME:
+            Game();
+            break;
+        case GAME_STATE_WON:
+            GameWon();
+            break;
+        case GAME_STATE_LOST:
+            GameLost();
+            break;
+        }
     }
 
     Shutdown();
@@ -111,11 +136,11 @@ void Init()
 
     // We start by adding a pointer to our exit state, this way //
     // it will be the last thing the player sees of the game.   //
-    g_StateStack.push(Exit);
+    g_StateStack.push(GAME_STATE_EXIT);
 
     // Then we add a pointer to our menu state, this will //
     // be the first thing the player sees of our game.    //
-    g_StateStack.push(Menu);
+    g_StateStack.push(GAME_STATE_MENU);
 
     // Initialize the true type font library //
     TTF_Init();
@@ -436,7 +461,7 @@ void HandleMenuInput()
             // Start Game //
             if (g_Event.key.keysym.sym == SDLK_g)
             {
-                g_StateStack.push(Game);
+                g_StateStack.push(GAME_STATE_GAME);
                 return;  // this state is done, exit the function
             }
         }
@@ -583,7 +608,7 @@ void HandleExitInput()
             // No //
             if (g_Event.key.keysym.sym == SDLK_n)
             {
-                g_StateStack.push(Menu);
+                g_StateStack.push(GAME_STATE_MENU);
                 return;  // this state is done, exit the function
             }
         }
@@ -627,8 +652,8 @@ void HandleWinLoseInput()
             {
                 g_StateStack.pop();
 
-                g_StateStack.push(Exit);
-                g_StateStack.push(Menu);
+                g_StateStack.push(GAME_STATE_EXIT);
+                g_StateStack.push(GAME_STATE_MENU);
                 return;
             }
         }
@@ -827,7 +852,7 @@ void CheckWin()
         }
 
         // Push the victory state onto the stack //
-        g_StateStack.push(GameWon);
+        g_StateStack.push(GAME_STATE_WON);
     }
 }
 
@@ -852,7 +877,7 @@ void CheckLoss()
         }
 
         // Push the losing state onto the stack //
-        g_StateStack.push(GameLost);
+        g_StateStack.push(GAME_STATE_LOST);
     }
 }
 

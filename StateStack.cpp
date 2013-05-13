@@ -7,20 +7,20 @@
 
 #include <stdio.h>
 
-void StateStack::push(StatePointer ptr) {
+void StateStack::push(int state) {
     if (stack_size == STATE_STACK_MAX_SIZE) {
         fprintf(stderr, "Attempting to push to full stack!\n");
         return;
     }
-    pointers[stack_size++] = ptr;
+    states[stack_size++] = state;
 }
 
-StatePointer StateStack::pop() {
+int StateStack::pop() {
     if (empty()) {
         fprintf(stderr, "Attempting to pop from empty stack!\n");
         return NULL;
     }
-    return pointers[--stack_size];
+    return states[--stack_size];
 }
 
 //  Aaron Cox, 2004 //

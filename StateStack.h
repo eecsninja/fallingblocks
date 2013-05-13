@@ -1,27 +1,25 @@
 //////////////////////////////////////////////////////////////////////////////////
 // StateStack.h
-// - A statically allocated stack to store function pointers.
+// - A statically allocated stack to store game states.
 //////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
-
-typedef void (*StatePointer)();
 
 #define STATE_STACK_MAX_SIZE       16
 
 class StateStack {
   private:
-    StatePointer pointers[STATE_STACK_MAX_SIZE];
+    int states[STATE_STACK_MAX_SIZE];
     int stack_size;
 
   public:
     StateStack() : stack_size(0) {}
 
-    void push(StatePointer ptr);
-    StatePointer pop();
+    void push(int state);
+    int pop();
 
-    StatePointer top() const {
-        return pointers[stack_size - 1];
+    int top() const {
+        return states[stack_size - 1];
     }
 
     bool empty() const {
