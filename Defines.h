@@ -16,9 +16,9 @@
 // The game area is the area where the focus block can go. //
 // These values are used to check collisions between the   //
 // game squares and the sides of the game area.            //
-#define GAME_AREA_LEFT   53
+#define GAME_AREA_LEFT   51
 #define GAME_AREA_RIGHT  251
-#define GAME_AREA_BOTTOM 298
+#define GAME_AREA_BOTTOM 299
 
 #define NUM_LEVELS       5    // number of levels in the game
 #define POINTS_PER_LINE  525  // points player receives for completing a line
