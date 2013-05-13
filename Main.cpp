@@ -19,8 +19,6 @@
 #include "StateStack.h"   // Replaces stack<StatePointer>.
 #include "LandedSquares.h"   // Replaces vector<cSquare>.
 
-using namespace std;
-
 // Global data //
 StateStack         g_StateStack;        // Our state stack
 SDL_Surface*       g_Bitmap = NULL;     // Our back bitmap
