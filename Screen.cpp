@@ -3,8 +3,6 @@
 // - Implements functions for class Screen.
 //////////////////////////////////////////////////////////////////////////////////
 
-//#pragma comment(lib, "SDL_TTF.lib")
-
 #include "Screen.h"
 
 #include <SDL/SDL.h>

@@ -3,11 +3,6 @@
 // File:    Main.cpp
 //////////////////////////////////////////////////////////////////////////////////
 
-// These three lines link in the required SDL components for our project. //
-// Alternatively, we could have linked them in our project settings.      //
-#pragma comment(lib, "SDL.lib")
-#pragma comment(lib, "SDLmain.lib")
-
 #include <stdlib.h>
 #include <time.h>    // We use time() to seed our random generator.
 
