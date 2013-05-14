@@ -51,16 +51,10 @@
 #define NEXT_BLOCK_CIRCLE_X 214 // next block in line to be focus block
 #define NEXT_BLOCK_CIRCLE_Y 347
 
-// Locations within bitmap of background screens //
-#define LEVEL_ONE_X   0
-#define LEVEL_ONE_Y   0
-#define LEVEL_TWO_X   300
-#define LEVEL_TWO_Y   0
-#define LEVEL_THREE_X 300
-#define LEVEL_THREE_Y 0
-#define LEVEL_FOUR_X  0
-#define LEVEL_FOUR_Y  396
-#define LEVEL_FIVE_X  300
-#define LEVEL_FIVE_Y  396
+// Palette entry range used for color cycling.
+#define COLOR_CYCLING_START_INDEX     8
+#define COLOR_CYCLING_END_INDEX      15
+#define NUM_CYCLED_COLORS    \
+        (COLOR_CYCLING_END_INDEX - COLOR_CYCLING_START_INDEX + 1)
 
 //  Aaron Cox, 2004 //

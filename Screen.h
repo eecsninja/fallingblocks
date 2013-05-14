@@ -7,9 +7,10 @@
 
 #include <stdio.h>
 
-#include "Enums.h"
+#include <SDL/SDL.h>
 
-struct SDL_Surface;
+#include "Defines.h"
+#include "Enums.h"
 
 class Screen {
   private:
@@ -17,8 +18,14 @@ class Screen {
     SDL_Surface*   m_SquaresBitmap;    // Our squares bitmap
     SDL_Surface*   m_Window;           // Our backbuffer
 
+    // Rotating part of original palette.
+    SDL_Color base_colors[255];
+
+    int m_CurrentLevel;                // Current level, used for level colors.
+
   public:
-    Screen() : m_Bitmap(NULL), m_SquaresBitmap(NULL), m_Window(NULL) {}
+    Screen() : m_Bitmap(NULL), m_SquaresBitmap(NULL), m_Window(NULL),
+               m_CurrentLevel(0){}
 
     // Sets up and breaks down the video screen.
     void Init();

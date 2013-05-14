@@ -5,17 +5,24 @@
 
 #include "Screen.h"
 
-#include <SDL/SDL.h>
-
 #ifdef RENDER_FONT
 #include <SDL/SDL_ttf.h> // True Type Font header
 #endif
 
-#include "Defines.h"
-
 namespace {
-const char kBitmapFile[] = "data/FallingBlocks.bmp";
+
+const char kBitmapFile[] = "data/ui.bmp";
 const char kSquaresFile[] = "data/squares.bmp";
+
+// Different colors for the UI.
+const SDL_Color kColors[] = {
+    { 255,  84,  17 },
+    { 202, 176,   2 },
+    {   1,  99, 231 },
+    { 255, 128,   0 },
+    { 128,   0,  64 },
+};
+
 }
 
 void Screen::Init() {
@@ -30,6 +37,12 @@ void Screen::Init() {
     m_Bitmap = SDL_LoadBMP(kBitmapFile);
     if (!m_Bitmap)
         fprintf(stderr, "Unable to open %s\n", kBitmapFile);
+
+    for (int i = 0; i < NUM_CYCLED_COLORS; ++i) {
+        base_colors[i] =
+            m_Bitmap->format->palette->colors[i + COLOR_CYCLING_START_INDEX];
+    }
+
     m_SquaresBitmap = SDL_LoadBMP(kSquaresFile);
     if (!m_Bitmap)
         fprintf(stderr, "Unable to open %s\n", kSquaresFile);
@@ -68,41 +81,31 @@ void Screen::Clear() {
 // This function draws the background //
 void Screen::DrawBackground(int level)
 {
-    SDL_Rect source;
+    if (m_CurrentLevel != level) {
+        m_CurrentLevel = level;
 
-    // Set our source rectangle to the current level's background //
-    switch (level)
-    {
-    case 1:
-        {
-        SDL_Rect temp = { LEVEL_ONE_X, LEVEL_ONE_Y, WINDOW_WIDTH, WINDOW_HEIGHT };
-        source = temp;
-        } break;
-    case 2:
-        {
-        SDL_Rect temp = { LEVEL_TWO_X, LEVEL_TWO_Y, WINDOW_WIDTH, WINDOW_HEIGHT };
-        source = temp;
-        } break;
-    case 3:
-        {
-        SDL_Rect temp = { LEVEL_THREE_X, LEVEL_THREE_Y, WINDOW_WIDTH, WINDOW_HEIGHT };
-        source = temp;
-        } break;
-    case 4:
-        {
-        SDL_Rect temp = { LEVEL_FOUR_X, LEVEL_FOUR_Y, WINDOW_WIDTH, WINDOW_HEIGHT };
-        source = temp;
-        } break;
-    case 5:
-        {
-        SDL_Rect temp = { LEVEL_FIVE_X, LEVEL_FIVE_Y, WINDOW_WIDTH, WINDOW_HEIGHT };
-        source = temp;
-        } break;
+        SDL_Color level_color;
+        // Select a different UI color for each level.
+        const int num_colors = sizeof(kColors) / sizeof(kColors[0]);
+        if (level >= 0 && level < num_colors)
+            level_color = kColors[level - 1];
+        else
+            level_color = kColors[num_colors - 1];
+
+        // Update the palette with the new color scheme.
+        for (int i = 0; i < NUM_CYCLED_COLORS; ++i) {
+            SDL_Color new_color;
+            new_color.r = ((uint16_t)base_colors[i].r * level_color.r) >> 8;
+            new_color.g = ((uint16_t)base_colors[i].g * level_color.g) >> 8;
+            new_color.b = ((uint16_t)base_colors[i].b * level_color.b) >> 8;
+            new_color.unused = 0;
+            SDL_SetColors(m_Bitmap, &new_color, i + COLOR_CYCLING_START_INDEX,
+                          1);
+        }
     }
 
     SDL_Rect destination = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
-
-    SDL_BlitSurface(m_Bitmap, &source, m_Window, &destination);
+    SDL_BlitSurface(m_Bitmap, NULL, m_Window, &destination);
 }
 
 void Screen::DrawSquare(int x, int y, int w, int h, int type) {
