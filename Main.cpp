@@ -8,8 +8,9 @@
 #pragma comment(lib, "SDL.lib")
 #pragma comment(lib, "SDLmain.lib")
 
-#include "time.h"    // We use time(), located in "time.h", to seed our random generator
-#include "SDL.h"     // Main SDL header
+#include <stdlib.h>
+#include <time.h>    // We use time() to seed our random generator.
+
 #include "Defines.h" // Our defines header
 #include "Enums.h"   // Our enums header
 #include "cBlock.h"  // Contains the class that represents a game block
@@ -17,13 +18,13 @@
 #include "StateStack.h"   // Replaces stack<StatePointer>.
 #include "LandedSquares.h"   // Replaces vector<cSquare>.
 #include "Screen.h"          // Replaces SDL video functions.
+#include "System.h"          // Replaces SDL timer and input functions.
 
 // Game object containing all (previously) global game data.
 class FallingBlocksGame {
   private:
     StateStack     m_StateStack;       // Our state stack
     Screen         m_Screen;           // Video screen controller.
-    SDL_Event      m_Event;            // An SDL event structure for input
     int            m_Timer;            // Our timer is just an integer
     cBlock         m_FocusBlock;       // The block the player is controlling
     cBlock         m_NextBlock;        // The next block to be the focus block
@@ -37,7 +38,7 @@ class FallingBlocksGame {
                           m_FocusBlockSpeed(INITIAL_SPEED) {}
 
     // Init, Main Loop, and Shutdown functions //
-    void Init();
+    bool Init();
     void MainLoop();
     void Shutdown();
 
@@ -81,7 +82,9 @@ enum GameStates {
 int main(int argc, char **argv)
 {
     FallingBlocksGame game;
-    game.Init();
+    if (!game.Init())
+        return -1;
+
     game.MainLoop();
     game.Shutdown();
 
@@ -89,15 +92,16 @@ int main(int argc, char **argv)
 }
 
 // This function initializes our game //
-void FallingBlocksGame::Init()
+bool FallingBlocksGame::Init()
 {
     // Initiliaze SDL video and our timer //
-    SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER);
+    if (!System::Init())
+        return false;
 
     m_Screen.Init();
 
-    // Get the number of ticks since SDL was initialized //
-    m_Timer = SDL_GetTicks();
+    // Get the number of ticks since system was initialized //
+    m_Timer = System::GetTicks();
 
     // Pass the squares bitmap to the landed squares container.
     m_OldSquares.Init();
@@ -118,6 +122,8 @@ void FallingBlocksGame::Init()
 //    m_StateStack.push(GAME_STATE_MENU);
 
     m_StateStack.push(GAME_STATE_GAME);
+
+    return true;
 }
 
 void FallingBlocksGame::MainLoop() {
@@ -157,9 +163,6 @@ void FallingBlocksGame::Shutdown()
     // Note that these are pointers to arrays of pointers. //
     const cSquare* temp_array_1 = m_FocusBlock.GetSquares();
     const cSquare* temp_array_2 = m_NextBlock.GetSquares();
-
-    // Tell SDL to shutdown and free any resources it was using //
-    SDL_Quit();
 }
 
 // This function handles the game's main menu. From here //
@@ -168,7 +171,7 @@ void FallingBlocksGame::Menu()
 {
     // Here we compare the difference between the current time and the last time we //
     // handled a frame. If FRAME_RATE amount of time has passed, it's time for a new frame. //
-    if ( (SDL_GetTicks() - m_Timer) >= FRAME_RATE )
+    if ( (System::GetTicks() - m_Timer) >= FRAME_RATE )
     {
         // We start by calling our input function //
         HandleMenuInput();
@@ -185,7 +188,7 @@ void FallingBlocksGame::Menu()
         // We've processed a frame so we now need to record the time at which we did it. //
         // This way we can compare this time with the next time our function gets called //
         // and see if enough time has passed. //
-        m_Timer = SDL_GetTicks();
+        m_Timer = System::GetTicks();
     }
 }
 
@@ -204,7 +207,7 @@ void FallingBlocksGame::Game()
 
     // Here we compare the difference between the current time and the last time we //
     // handled a frame. If FRAME_RATE amount of time has, it's time for a new frame. //
-    if ( (SDL_GetTicks() - m_Timer) >= FRAME_RATE )
+    if ( (System::GetTicks() - m_Timer) >= FRAME_RATE )
     {
         HandleGameInput();
 
@@ -275,7 +278,7 @@ void FallingBlocksGame::Game()
         // We've processed a frame so we now need to record the time at which we did it. //
         // This way we can compare this time the next time our function gets called and  //
         // see if enough time has passed between iterations. //
-        m_Timer = SDL_GetTicks();
+        m_Timer = System::GetTicks();
     }
 }
 
@@ -285,7 +288,7 @@ void FallingBlocksGame::Exit()
 {
     // Here we compare the difference between the current time and the last time we //
     // handled a frame. If FRAME_RATE amount of time has, it's time for a new frame. //
-    if ( (SDL_GetTicks() - m_Timer) >= FRAME_RATE )
+    if ( (System::GetTicks() - m_Timer) >= FRAME_RATE )
     {
         HandleExitInput();
 
@@ -300,14 +303,14 @@ void FallingBlocksGame::Exit()
         // We've processed a frame so we now need to record the time at which we did it. //
         // This way we can compare this time the next time our function gets called and  //
         // see if enough time has passed between iterations. //
-        m_Timer = SDL_GetTicks();
+        m_Timer = System::GetTicks();
     }
 }
 
 // Display a victory message. //
 void FallingBlocksGame::GameWon()
 {
-    if ( (SDL_GetTicks() - m_Timer) >= FRAME_RATE )
+    if ( (System::GetTicks() - m_Timer) >= FRAME_RATE )
     {
         HandleWinLoseInput();
 
@@ -319,14 +322,14 @@ void FallingBlocksGame::GameWon()
         // Update video screen.
         m_Screen.Update();
 
-        m_Timer = SDL_GetTicks();
+        m_Timer = System::GetTicks();
     }
 }
 
 // Display a game over message. //
 void FallingBlocksGame::GameLost()
 {
-    if ( (SDL_GetTicks() - m_Timer) >= FRAME_RATE )
+    if ( (System::GetTicks() - m_Timer) >= FRAME_RATE )
     {
         HandleWinLoseInput();
 
@@ -338,7 +341,7 @@ void FallingBlocksGame::GameLost()
         // Update video screen.
         m_Screen.Update();
 
-        m_Timer = SDL_GetTicks();
+        m_Timer = System::GetTicks();
     }
 }
 
@@ -366,43 +369,18 @@ void FallingBlocksGame::DisplayText(const char* text, int x, int y, int size, in
 // handles it for the game's menu screen.  //
 void FallingBlocksGame::HandleMenuInput()
 {
-    // Fill our event structure with event information. //
-    if ( SDL_PollEvent(&m_Event) )
+    // Get state of the input keys.
+    System::KeyState key_state = System::GetKeyState();
+
+    if (key_state.quit)
     {
-        // Handle user manually closing game window //
-        if (m_Event.type == SDL_QUIT)
-        {
-            // While state stack isn't empty, pop //
-            while (!m_StateStack.empty())
-            {
-                m_StateStack.pop();
-            }
-
-            return;  // game is over, exit the function
-        }
-
-        // Handle keyboard input here //
-        if (m_Event.type == SDL_KEYDOWN)
-        {
-            if (m_Event.key.keysym.sym == SDLK_ESCAPE)
-            {
-                m_StateStack.pop();
-                return;  // this state is done, exit the function
-            }
-            // Quit //
-            if (m_Event.key.keysym.sym == SDLK_q)
-            {
-                m_StateStack.pop();
-                return;  // game is over, exit the function
-            }
-            // Start Game //
-            if (m_Event.key.keysym.sym == SDLK_g)
-            {
-//                m_StateStack.push(GAME_STATE_GAME);
-
-                return;  // this state is done, exit the function
-            }
-        }
+        m_StateStack.pop();
+        return;  // this state is done, exit the function
+    }
+    if (key_state.new_game)
+    {
+//      m_StateStack.push(GAME_STATE_GAME);
+        return;  // this state is done, exit the function
     }
 }
 
@@ -415,72 +393,26 @@ void FallingBlocksGame::HandleGameInput()
     static bool left_pressed  = false;
     static bool right_pressed = false;
 
-    // Fill our event structure with event information. //
-    if ( SDL_PollEvent(&m_Event) )
+    // Get state of the input keys.
+    System::KeyState key_state = System::GetKeyState();
+
+    if (key_state.quit)
     {
-        // Handle user manually closing game window //
-        if (m_Event.type == SDL_QUIT)
-        {
-            // While state stack isn't empty, pop //
-            while (!m_StateStack.empty())
-            {
-                m_StateStack.pop();
-            }
-
-            return;  // game is over, exit the function
-        }
-
-        // Handle keyboard input here //
-        if (m_Event.type == SDL_KEYDOWN)
-        {
-            if (m_Event.key.keysym.sym == SDLK_ESCAPE)
-            {
-                m_StateStack.pop();
-
-                return;  // this state is done, exit the function
-            }
-
-            if (m_Event.key.keysym.sym == SDLK_UP)
-            {
-                // Check collisions before rotating //
-                if (!CheckRotationCollisions(m_FocusBlock))
-                {
-                    m_FocusBlock.Rotate();
-                }
-            }
-
-            // For the left, right, and down arrow keys, we just set a bool variable //
-            if (m_Event.key.keysym.sym == SDLK_LEFT)
-            {
-                left_pressed = true;
-            }
-            if (m_Event.key.keysym.sym == SDLK_RIGHT)
-            {
-                right_pressed = true;
-            }
-            if (m_Event.key.keysym.sym == SDLK_DOWN)
-            {
-                down_pressed = true;
-            }
-        }
-
-        // If player lifts key, set bool variable to false //
-        if (m_Event.type == SDL_KEYUP)
-        {
-            if (m_Event.key.keysym.sym == SDLK_LEFT)
-            {
-                left_pressed = false;
-            }
-            if (m_Event.key.keysym.sym == SDLK_RIGHT)
-            {
-                right_pressed = false;
-            }
-            if (m_Event.key.keysym.sym == SDLK_DOWN)
-            {
-                down_pressed = false;
-            }
-        }
+        m_StateStack.pop();
+        return;  // this state is done, exit the function
     }
+
+    if (key_state.up)
+    {
+        // Check collisions before rotating.
+        if (!CheckRotationCollisions(m_FocusBlock))
+            m_FocusBlock.Rotate();
+    }
+
+    // For the left, right, and down arrow keys, we just set a bool variable.
+    left_pressed = key_state.left;
+    right_pressed = key_state.right;
+    down_pressed = key_state.down;
 
     // Now we handle the arrow keys, making sure to check for collisions //
     if (down_pressed)
@@ -513,89 +445,51 @@ void FallingBlocksGame::HandleGameInput()
 // handles it for the game's exit screen.  //
 void FallingBlocksGame::HandleExitInput()
 {
-    // Fill our event structure with event information. //
-    if ( SDL_PollEvent(&m_Event) )
+    // Get state of the input keys.
+    System::KeyState key_state = System::GetKeyState();
+
+    if (key_state.quit)
     {
-        // Handle user manually closing game window //
-        if (m_Event.type == SDL_QUIT)
-        {
-            // While state stack isn't empty, pop //
-            while (!m_StateStack.empty())
-            {
-                m_StateStack.pop();
-            }
+        m_StateStack.pop();
+        return;  // this state is done, exit the function
+    }
 
-            return;  // game is over, exit the function
-        }
-
-        // Handle keyboard input here //
-        if (m_Event.type == SDL_KEYDOWN)
-        {
-            if (m_Event.key.keysym.sym == SDLK_ESCAPE)
-            {
-                m_StateStack.pop();
-
-                return;  // this state is done, exit the function
-            }
-            // Yes //
-            if (m_Event.key.keysym.sym == SDLK_y)
-            {
-                m_StateStack.pop();
-                return;  // game is over, exit the function
-            }
-            // No //
-            if (m_Event.key.keysym.sym == SDLK_n)
-            {
-                m_StateStack.push(GAME_STATE_MENU);
-                return;  // this state is done, exit the function
-            }
-        }
+    // Yes //
+    if (key_state.yes)
+    {
+        m_StateStack.pop();
+        return;  // game is over, exit the function
+    }
+    // No //
+    if (key_state.no)
+    {
+        m_StateStack.push(GAME_STATE_MENU);
+        return;  // this state is done, exit the function
     }
 }
 
 // Input handling for win/lose screens. //
 void FallingBlocksGame::HandleWinLoseInput()
 {
-    if ( SDL_PollEvent(&m_Event) )
+    // Get state of the input keys.
+    System::KeyState key_state = System::GetKeyState();
+
+    if (key_state.quit) {
+        m_StateStack.pop();
+        return;
+    }
+    if (key_state.yes) {
+        m_StateStack.pop();
+        return;
+    }
+
+    if (key_state.no)
     {
-        // Handle user manually closing game window //
-        if (m_Event.type == SDL_QUIT)
-        {
-            // While state stack isn't empty, pop //
-            while (!m_StateStack.empty())
-            {
-                m_StateStack.pop();
-            }
+        m_StateStack.pop();
 
-            return;
-        }
-
-        // Handle keyboard input here //
-        if (m_Event.type == SDL_KEYDOWN)
-        {
-            if (m_Event.key.keysym.sym == SDLK_ESCAPE)
-            {
-                m_StateStack.pop();
-
-                return;
-            }
-            if (m_Event.key.keysym.sym == SDLK_y)
-            {
-                m_StateStack.pop();
-                return;
-            }
-            // If player chooses to continue playing, we pop off    //
-            // current state and push exit and menu states back on. //
-            if (m_Event.key.keysym.sym == SDLK_n)
-            {
-                m_StateStack.pop();
-
-//                m_StateStack.push(GAME_STATE_EXIT);
-//                m_StateStack.push(GAME_STATE_MENU);
-
-                return;
-            }
-        }
+//        m_StateStack.push(GAME_STATE_EXIT);
+//        m_StateStack.push(GAME_STATE_MENU);
+        return;
     }
 }
 
