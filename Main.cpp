@@ -7,11 +7,11 @@
 // Alternatively, we could have linked them in our project settings.      //
 #pragma comment(lib, "SDL.lib")
 #pragma comment(lib, "SDLmain.lib")
-#pragma comment(lib, "SDL_TTF.lib")
+//#pragma comment(lib, "SDL_TTF.lib")
 
 #include "time.h"    // We use time(), located in "time.h", to seed our random generator
 #include "SDL.h"     // Main SDL header
-#include "SDL_TTF.h" // True Type Font header
+//#include "SDL_TTF.h" // True Type Font header
 #include "Defines.h" // Our defines header
 #include "Enums.h"   // Our enums header
 #include "cBlock.h"  // Contains the class that represents a game block
@@ -133,7 +133,7 @@ void FallingBlocksGame::Init()
     m_StateStack.push(GAME_STATE_GAME);
 
     // Initialize the true type font library //
-    TTF_Init();
+//    TTF_Init();
 }
 
 void FallingBlocksGame::MainLoop() {
@@ -166,7 +166,7 @@ void FallingBlocksGame::MainLoop() {
 void FallingBlocksGame::Shutdown()
 {
     // Shutdown the true type font library //
-    TTF_Quit();
+//    TTF_Quit();
 
     // Free our surfaces //
     SDL_FreeSurface(m_Bitmap);
@@ -418,6 +418,7 @@ void FallingBlocksGame::ClearScreen()
 // text, and the color of the text and background.              //
 void FallingBlocksGame::DisplayText(const char* text, int x, int y, int size, int fR, int fG, int fB, int bR, int bG, int bB)
 {
+#if 0
     // Open our font and set its size to the given parameter //
     TTF_Font* font = TTF_OpenFont("arial.ttf", size);
 
@@ -439,6 +440,7 @@ void FallingBlocksGame::DisplayText(const char* text, int x, int y, int size, in
 
     // Close the font. //
     TTF_CloseFont(font);
+#endif
 }
 
 // This function receives player input and //
