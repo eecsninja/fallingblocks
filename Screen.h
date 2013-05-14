@@ -34,7 +34,7 @@ class Screen {
     void DrawBackground(int level);
 
     // Draw a square at (x, y) of size (w, h) and |type|.
-    void DrawSquare(int x, int y, int w, int h, BlockType type);
+    void DrawSquare(int x, int y, int w, int h, int type);
 
     // Renders a string on the screen.
     void DisplayText(const char* text, int x, int y, int size,

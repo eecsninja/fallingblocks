@@ -17,7 +17,7 @@ class LandedSquares {
     // there is no need to update the coordinates of all squares above a line
     // that was cleared.
     struct LandedSquare {
-        BlockType type;     // Type of the block that produced this square.
+        int type;           // Type of the block that produced this square.
         bool valid:1;         // If this flag is not set, then the struct acts as
                             // a placeholder in an array.
         LandedSquare() : valid(false) {}

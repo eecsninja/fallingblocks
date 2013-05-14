@@ -106,9 +106,8 @@ void FallingBlocksGame::Init()
     srand( time(0) );
 
     // Initialize blocks and set them to their proper locations. //
-    m_FocusBlock = cBlock(BLOCK_START_X, BLOCK_START_Y, (BlockType)(rand()%7));
-    m_NextBlock  =
-        cBlock(NEXT_BLOCK_CIRCLE_X, NEXT_BLOCK_CIRCLE_Y, (BlockType)(rand()%7));
+    m_FocusBlock = cBlock(BLOCK_START_X, BLOCK_START_Y, (rand()%7));
+    m_NextBlock  = cBlock(NEXT_BLOCK_CIRCLE_X, NEXT_BLOCK_CIRCLE_Y, (rand()%7));
 
     // We start by adding a pointer to our exit state, this way //
     // it will be the last thing the player sees of the game.   //
@@ -763,8 +762,7 @@ void FallingBlocksGame::ChangeFocusBlock()
     m_FocusBlock.SetupSquares(BLOCK_START_X, BLOCK_START_Y);
 
     // Set the next block to a new block of random type //
-    m_NextBlock =
-        cBlock(NEXT_BLOCK_CIRCLE_X, NEXT_BLOCK_CIRCLE_Y, (BlockType)(rand()%7));
+    m_NextBlock = cBlock(NEXT_BLOCK_CIRCLE_X, NEXT_BLOCK_CIRCLE_Y, (rand()%7));
 }
 
 // Return amount of lines cleared or zero if no lines were cleared //

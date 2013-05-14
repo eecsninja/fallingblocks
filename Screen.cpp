@@ -107,7 +107,7 @@ void Screen::DrawBackground(int level)
     SDL_BlitSurface(m_Bitmap, &source, m_Window, &destination);
 }
 
-void Screen::DrawSquare(int x, int y, int w, int h, BlockType type) {
+void Screen::DrawSquare(int x, int y, int w, int h, int type) {
 
     // The bitmap of each color of square is arranged in the same order as the
     // block type enums.

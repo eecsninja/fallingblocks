@@ -20,7 +20,7 @@ private:
     int m_CenterY;
 
     // Type of block //
-    BlockType m_Type;
+    int m_Type;
 
     // Array of squares that make up the block //
     cSquare m_Squares[CBLOCK_NUM_SQUARES];
@@ -30,7 +30,7 @@ public:
     cBlock() {}
 
     // The constructor just sets the block location and calls SetupSquares //
-    cBlock(int x, int y, BlockType type);
+    cBlock(int x, int y, int type);
 
     // Setup our block according to its location and type. Note that the
     // squares are defined according to their distance from the block's center.

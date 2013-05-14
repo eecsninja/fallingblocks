@@ -18,7 +18,7 @@ private:
     int m_CenterY;
 
     // Type of block. Needed to locate the correct square in our bitmap //
-    BlockType m_BlockType;
+    int m_BlockType;
 
 public:
     // Default constructor, your compiler will probably require this //
@@ -27,7 +27,7 @@ public:
     }
 
     // Main constructor takes location and type of block.
-    cSquare(int x, int y, BlockType type);
+    cSquare(int x, int y, int type);
 
     // Draw() takes a pointer to the Screen controller.
     void Draw(Screen* screen) const;
@@ -41,7 +41,7 @@ public:
     int GetY() const { return m_CenterY - SQUARE_MEDIAN; }
     int GetCenterX() const { return m_CenterX; }
     int GetCenterY() const { return m_CenterY; }
-    BlockType GetType() const { return m_BlockType; }
+    int GetType() const { return m_BlockType; }
 
     // Mutators //
     void SetX(int x) { m_CenterX = x + SQUARE_MEDIAN; }

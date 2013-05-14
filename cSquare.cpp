@@ -11,7 +11,7 @@
 
 // Main constructor takes location and type of block, //
 // and pointer to our bitmap surface. //
-cSquare::cSquare(int x, int y, BlockType type)
+cSquare::cSquare(int x, int y, int type)
         : m_CenterX(x), m_CenterY(y), m_BlockType(type)
 {
 }
