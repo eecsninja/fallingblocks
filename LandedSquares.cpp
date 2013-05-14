@@ -17,17 +17,16 @@ void LandedSquares::SquareRow::Clear() {
     empty = true;
 }
 
-LandedSquares::LandedSquares() : bitmap(NULL) {
+LandedSquares::LandedSquares() {
     Clear();
 }
 
-void LandedSquares::Init(SDL_Surface* bitmap) {
-    this->bitmap = bitmap;
+void LandedSquares::Init() {
     Clear();
 }
 
-// Draw the squares to |window|.
-void LandedSquares::Draw(SDL_Surface* window) const {
+// Draw the squares to |screen|.
+void LandedSquares::Draw(Screen* screen) const {
     for (int y = 0; y < MAX_NUM_LINES; ++y) {
         const SquareRow& row = *row_ptrs[y];
         if (row.empty)
@@ -36,10 +35,10 @@ void LandedSquares::Draw(SDL_Surface* window) const {
             const LandedSquare& square = row.squares[x];
             if (!square.valid)
                 continue;
-            cSquare temp_square(0, 0, bitmap, square.type);
+            cSquare temp_square(0, 0, square.type);
             temp_square.SetX(GAME_AREA_LEFT + x * SQUARE_SIZE);
             temp_square.SetY(GAME_AREA_BOTTOM - (y + 1) * SQUARE_SIZE);
-            temp_square.Draw(window);
+            temp_square.Draw(screen);
         }
     }
 }
@@ -55,7 +54,7 @@ bool LandedSquares::CheckCollision(int center_x, int center_y,
             const LandedSquare& square = row.squares[x];
             if (!square.valid)
                 continue;
-            cSquare temp_square(0, 0, bitmap, square.type);
+            cSquare temp_square(0, 0, square.type);
             temp_square.SetX(GAME_AREA_LEFT + x * SQUARE_SIZE);
             temp_square.SetY(GAME_AREA_BOTTOM - (y + 1) * SQUARE_SIZE);
             int dx = center_x - temp_square.GetCenterX();

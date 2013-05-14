@@ -7,25 +7,22 @@
 // Alternatively, we could have linked them in our project settings.      //
 #pragma comment(lib, "SDL.lib")
 #pragma comment(lib, "SDLmain.lib")
-//#pragma comment(lib, "SDL_TTF.lib")
 
 #include "time.h"    // We use time(), located in "time.h", to seed our random generator
 #include "SDL.h"     // Main SDL header
-//#include "SDL_TTF.h" // True Type Font header
 #include "Defines.h" // Our defines header
 #include "Enums.h"   // Our enums header
 #include "cBlock.h"  // Contains the class that represents a game block
 
 #include "StateStack.h"   // Replaces stack<StatePointer>.
 #include "LandedSquares.h"   // Replaces vector<cSquare>.
+#include "Screen.h"          // Replaces SDL video functions.
 
 // Game object containing all (previously) global game data.
 class FallingBlocksGame {
   private:
     StateStack     m_StateStack;       // Our state stack
-    SDL_Surface*   m_Bitmap;           // Our back bitmap
-    SDL_Surface*   m_SquaresBitmap;    // Our squares bitmap
-    SDL_Surface*   m_Window;           // Our backbuffer
+    Screen         m_Screen;           // Video screen controller.
     SDL_Event      m_Event;            // An SDL event structure for input
     int            m_Timer;            // Our timer is just an integer
     cBlock         m_FocusBlock;       // The block the player is controlling
@@ -35,10 +32,7 @@ class FallingBlocksGame {
     int            m_Level;            // Current level player is on
     int            m_FocusBlockSpeed;  // Speed of the focus block
  public:
-    FallingBlocksGame() : m_Bitmap(NULL),
-                          m_SquaresBitmap(NULL),
-                          m_Window(NULL),
-                          m_Score(0),
+    FallingBlocksGame() : m_Score(0),
                           m_Level(1),
                           m_FocusBlockSpeed(INITIAL_SPEED) {}
 
@@ -99,28 +93,22 @@ void FallingBlocksGame::Init()
 {
     // Initiliaze SDL video and our timer //
     SDL_Init( SDL_INIT_VIDEO | SDL_INIT_TIMER);
-    // Setup our window's dimensions, bits-per-pixel (0 tells SDL to choose for us), //
-    // and video format (SDL_ANYFORMAT leaves the decision to SDL). This function    //
-    // returns a pointer to our window which we assign to m_Window.                  //
-    m_Window = SDL_SetVideoMode(WINDOW_WIDTH, WINDOW_HEIGHT, 0, SDL_ANYFORMAT);
-    // Set the title of our window //
-    SDL_WM_SetCaption(WINDOW_CAPTION, 0);
+
+    m_Screen.Init();
+
     // Get the number of ticks since SDL was initialized //
     m_Timer = SDL_GetTicks();
 
-    // Fill our bitmap structure with information //
-    m_Bitmap = SDL_LoadBMP("data/FallingBlocks.bmp");
-    m_SquaresBitmap = SDL_LoadBMP("data/squares.bmp");
-
     // Pass the squares bitmap to the landed squares container.
-    m_OldSquares.Init(m_SquaresBitmap);
+    m_OldSquares.Init();
 
     // Seed our random number generator //
     srand( time(0) );
 
     // Initialize blocks and set them to their proper locations. //
-    m_FocusBlock = cBlock(BLOCK_START_X, BLOCK_START_Y, m_SquaresBitmap, (BlockType)(rand()%7));
-    m_NextBlock  = cBlock(NEXT_BLOCK_CIRCLE_X, NEXT_BLOCK_CIRCLE_Y, m_SquaresBitmap, (BlockType)(rand()%7));
+    m_FocusBlock = cBlock(BLOCK_START_X, BLOCK_START_Y, (BlockType)(rand()%7));
+    m_NextBlock  =
+        cBlock(NEXT_BLOCK_CIRCLE_X, NEXT_BLOCK_CIRCLE_Y, (BlockType)(rand()%7));
 
     // We start by adding a pointer to our exit state, this way //
     // it will be the last thing the player sees of the game.   //
@@ -131,9 +119,6 @@ void FallingBlocksGame::Init()
 //    m_StateStack.push(GAME_STATE_MENU);
 
     m_StateStack.push(GAME_STATE_GAME);
-
-    // Initialize the true type font library //
-//    TTF_Init();
 }
 
 void FallingBlocksGame::MainLoop() {
@@ -165,13 +150,8 @@ void FallingBlocksGame::MainLoop() {
 // This function shuts down our game //
 void FallingBlocksGame::Shutdown()
 {
-    // Shutdown the true type font library //
-//    TTF_Quit();
-
-    // Free our surfaces //
-    SDL_FreeSurface(m_Bitmap);
-    SDL_FreeSurface(m_SquaresBitmap);
-    SDL_FreeSurface(m_Window);
+    // Clean up video resources.
+    m_Screen.Cleanup();
 
     // Get pointers to the squares in our focus and next blocks so we can delete them. //
     // We must do this before we delete our blocks so we don't lose references to the squares. //
@@ -200,9 +180,8 @@ void FallingBlocksGame::Menu()
         DisplayText("Start (G)ame", 120, 120, 12, 255, 255, 255, 0, 0, 0);
         DisplayText("(Q)uit Game",  120, 150, 12, 255, 255, 255, 0, 0, 0);
 
-        // Tell SDL to display our backbuffer. The four 0's will make //
-        // SDL display the whole screen. //
-        SDL_UpdateRect(m_Window, 0, 0, 0, 0);
+        // Update video screen.
+        m_Screen.Update();
 
         // We've processed a frame so we now need to record the time at which we did it. //
         // This way we can compare this time with the next time our function gets called //
@@ -268,11 +247,11 @@ void FallingBlocksGame::Game()
         DrawBackground();
 
         // Draw the focus block and next block. //
-        m_FocusBlock.Draw(m_Window);
-        m_NextBlock.Draw(m_Window);
+        m_FocusBlock.Draw(&m_Screen);
+        m_NextBlock.Draw(&m_Screen);
 
         // Draw the old squares. //
-        m_OldSquares.Draw(m_Window);
+        m_OldSquares.Draw(&m_Screen);
 
         // Draw the text for the current level, score, and needed score. //
 
@@ -291,9 +270,8 @@ void FallingBlocksGame::Game()
         DisplayText(nextscore, NEEDED_SCORE_RECT_X, NEEDED_SCORE_RECT_Y, 8, 0, 0, 0, 255, 255, 255);
         DisplayText(level, LEVEL_RECT_X, LEVEL_RECT_Y, 8, 0, 0, 0, 255, 255, 255);
 
-        // Tell SDL to display our backbuffer. The four 0's will make //
-        // SDL display the whole screen. //
-        SDL_UpdateRect(m_Window, 0, 0, 0, 0);
+        // Update video screen.
+        m_Screen.Update();
 
         // We've processed a frame so we now need to record the time at which we did it. //
         // This way we can compare this time the next time our function gets called and  //
@@ -317,9 +295,8 @@ void FallingBlocksGame::Exit()
 
         DisplayText("Quit Game (Y or N)?", 100, 150, 12, 255, 255, 255, 0, 0, 0);
 
-        // Tell SDL to display our backbuffer. The four 0's will make //
-        // SDL display the whole screen. //
-        SDL_UpdateRect(m_Window, 0, 0, 0, 0);
+        // Update video screen.
+        m_Screen.Update();
 
         // We've processed a frame so we now need to record the time at which we did it. //
         // This way we can compare this time the next time our function gets called and  //
@@ -340,7 +317,8 @@ void FallingBlocksGame::GameWon()
         DisplayText("You Win!!!", 100, 120, 12, 255, 255, 255, 0, 0, 0);
         DisplayText("Quit Game (Y or N)?", 100, 140, 12, 255, 255, 255, 0, 0, 0);
 
-        SDL_UpdateRect(m_Window, 0, 0, 0, 0);
+        // Update video screen.
+        m_Screen.Update();
 
         m_Timer = SDL_GetTicks();
     }
@@ -358,7 +336,8 @@ void FallingBlocksGame::GameLost()
         DisplayText("You Lose.", 100, 120, 12, 255, 255, 255, 0, 0, 0);
         DisplayText("Quit Game (Y or N)?", 100, 140, 12, 255, 255, 255, 0, 0, 0);
 
-        SDL_UpdateRect(m_Window, 0, 0, 0, 0);
+        // Update video screen.
+        m_Screen.Update();
 
         m_Timer = SDL_GetTicks();
     }
@@ -367,50 +346,13 @@ void FallingBlocksGame::GameLost()
 // This function draws the background //
 void FallingBlocksGame::DrawBackground()
 {
-    SDL_Rect source;
-
-    // Set our source rectangle to the current level's background //
-    switch (m_Level)
-    {
-    case 1:
-        {
-        SDL_Rect temp = { LEVEL_ONE_X, LEVEL_ONE_Y, WINDOW_WIDTH, WINDOW_HEIGHT };
-        source = temp;
-        } break;
-    case 2:
-        {
-        SDL_Rect temp = { LEVEL_TWO_X, LEVEL_TWO_Y, WINDOW_WIDTH, WINDOW_HEIGHT };
-        source = temp;
-        } break;
-    case 3:
-        {
-        SDL_Rect temp = { LEVEL_THREE_X, LEVEL_THREE_Y, WINDOW_WIDTH, WINDOW_HEIGHT };
-        source = temp;
-        } break;
-    case 4:
-        {
-        SDL_Rect temp = { LEVEL_FOUR_X, LEVEL_FOUR_Y, WINDOW_WIDTH, WINDOW_HEIGHT };
-        source = temp;
-        } break;
-    case 5:
-        {
-        SDL_Rect temp = { LEVEL_FIVE_X, LEVEL_FIVE_Y, WINDOW_WIDTH, WINDOW_HEIGHT };
-        source = temp;
-        } break;
-    }
-
-    SDL_Rect destination = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
-
-    SDL_BlitSurface(m_Bitmap, &source, m_Window, &destination);
+    m_Screen.DrawBackground(m_Level);
 }
 
 // This function simply clears the back buffer to black //
 void FallingBlocksGame::ClearScreen()
 {
-    // This function just fills a surface with a given color. The //
-    // first 0 tells SDL to fill the whole surface. The second 0  //
-    // is for black. //
-    SDL_FillRect(m_Window, 0, 0);
+    m_Screen.Clear();
 }
 
 // This function displays text to the screen. It takes the text //
@@ -418,29 +360,7 @@ void FallingBlocksGame::ClearScreen()
 // text, and the color of the text and background.              //
 void FallingBlocksGame::DisplayText(const char* text, int x, int y, int size, int fR, int fG, int fB, int bR, int bG, int bB)
 {
-#if 0
-    // Open our font and set its size to the given parameter //
-    TTF_Font* font = TTF_OpenFont("arial.ttf", size);
-
-    SDL_Color foreground  = { fR, fG, fB};   // text color
-    SDL_Color background  = { bR, bG, bB };  // color of what's behind the text
-
-    // This renders our text to a temporary surface. There //
-    // are other text functions, but this one looks nicer. //
-    SDL_Surface* temp = TTF_RenderText_Shaded(font, text, foreground, background);
-
-    // A structure storing the destination of our text. //
-    SDL_Rect destination = { x, y, 0, 0 };
-
-    // Blit the text surface to our window surface. //
-    SDL_BlitSurface(temp, NULL, m_Window, &destination);
-
-    // Always free memory! //
-    SDL_FreeSurface(temp);
-
-    // Close the font. //
-    TTF_CloseFont(font);
-#endif
+    m_Screen.DisplayText(text, x, y, size, fR, fG, fB, bR, bG, bB);
 }
 
 // This function receives player input and //
@@ -840,10 +760,11 @@ void FallingBlocksGame::ChangeFocusBlock()
         m_OldSquares.Add(square_array[i]);
 
     m_FocusBlock = m_NextBlock; // set the focus block to the next block
-    m_FocusBlock.SetupSquares(BLOCK_START_X, BLOCK_START_Y, m_SquaresBitmap);
+    m_FocusBlock.SetupSquares(BLOCK_START_X, BLOCK_START_Y);
 
     // Set the next block to a new block of random type //
-    m_NextBlock = cBlock(NEXT_BLOCK_CIRCLE_X, NEXT_BLOCK_CIRCLE_Y, m_SquaresBitmap, (BlockType)(rand()%7));
+    m_NextBlock =
+        cBlock(NEXT_BLOCK_CIRCLE_X, NEXT_BLOCK_CIRCLE_Y, (BlockType)(rand()%7));
 }
 
 // Return amount of lines cleared or zero if no lines were cleared //

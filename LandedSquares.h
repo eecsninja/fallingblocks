@@ -7,9 +7,9 @@
 
 #include "cSquare.h"
 
-struct SDL_Surface;
-
 #include "Defines.h"
+
+class Screen;
 
 class LandedSquares {
   private:
@@ -38,15 +38,13 @@ class LandedSquares {
     // All the rows in physical order.  These point to the objects in |rows|.
     SquareRow* row_ptrs[MAX_NUM_LINES];
 
-    SDL_Surface* bitmap;
-
   public:
     LandedSquares();
 
-    void Init(SDL_Surface* bitmap);
+    void Init();
 
-    // Draw the squares to |window|.
-    void Draw(SDL_Surface* window) const;
+    // Draw the squares to |screen|.
+    void Draw(Screen* screen) const;
 
     // Iterate through each square of each row, checking for collisions.
     bool CheckCollision(int center_x, int center_y, int distance) const;

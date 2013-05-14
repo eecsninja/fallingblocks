@@ -8,7 +8,7 @@
 #include "Enums.h"
 #include "Defines.h"
 
-struct SDL_Surface;
+class Screen;
 
 class cSquare
 {
@@ -20,21 +20,17 @@ private:
     // Type of block. Needed to locate the correct square in our bitmap //
     BlockType m_BlockType;
 
-    // A pointer to our bitmap surface from "Main.cpp" //
-    SDL_Surface* m_Bitmap;
-
 public:
     // Default constructor, your compiler will probably require this //
     cSquare()
     {
     }
 
-    // Main constructor takes location and type of block, //
-    // and pointer to our bitmap surface. //
-    cSquare(int x, int y, SDL_Surface* bitmap, BlockType type);
+    // Main constructor takes location and type of block.
+    cSquare(int x, int y, BlockType type);
 
-    // Draw() takes a pointer to the surface to draw to (our window) //
-    void Draw(SDL_Surface* window) const;
+    // Draw() takes a pointer to the Screen controller.
+    void Draw(Screen* screen) const;
 
     // Remember, SQUARE_MEDIAN represents the distance from the square's center to //
     // its sides. SQUARE_MEDIAN*2 gives us the width and height of our squares.    //

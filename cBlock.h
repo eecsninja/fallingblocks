@@ -8,9 +8,9 @@
 
 #include "cSquare.h"
 
-struct SDL_Surface;
-
 #define CBLOCK_NUM_SQUARES             4
+
+class Screen;
 
 class cBlock
 {
@@ -30,15 +30,14 @@ public:
     cBlock() {}
 
     // The constructor just sets the block location and calls SetupSquares //
-    cBlock(int x, int y, SDL_Surface* bitmap, BlockType type);
+    cBlock(int x, int y, BlockType type);
 
-    // Setup our block according to its location and type. Note that the squares //
-    // are defined according to their distance from the block's center. This     //
-    // function takes a surface that gets passed to cSquare's constructor.       //
-    void SetupSquares(int x, int y, SDL_Surface* bitmap);
+    // Setup our block according to its location and type. Note that the
+    // squares are defined according to their distance from the block's center.
+    void SetupSquares(int x, int y);
 
     // Draw() simply iterates through the squares and calls their Draw() functions. //
-    void Draw(SDL_Surface* Window) const;
+    void Draw(Screen* screen) const;
 
     // Move() simply changes the block's center and calls the squares' move functions. //
     void Move(Direction dir);
