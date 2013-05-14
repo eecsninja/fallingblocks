@@ -5,8 +5,8 @@
 #pragma once
 
 // Window related defines //
-#define WINDOW_WIDTH   300
-#define WINDOW_HEIGHT  400
+#define WINDOW_WIDTH   320
+#define WINDOW_HEIGHT  240
 #define WINDOW_CAPTION "Falling Blocks"
 
 // Game related defines //
@@ -16,9 +16,9 @@
 // The game area is the area where the focus block can go. //
 // These values are used to check collisions between the   //
 // game squares and the sides of the game area.            //
-#define GAME_AREA_LEFT   51
-#define GAME_AREA_RIGHT  251
-#define GAME_AREA_BOTTOM 299
+#define GAME_AREA_LEFT   32
+#define GAME_AREA_RIGHT  192
+#define GAME_AREA_BOTTOM 224
 
 #define NUM_LEVELS       5    // number of levels in the game
 #define POINTS_PER_LINE  525  // points player receives for completing a line
@@ -34,22 +34,22 @@
 #define SLIDE_TIME       15
 
 #define SQUARES_PER_ROW  10  // number of squares that fit in a row
-#define SQUARE_MEDIAN    10  // distance from the center of a square to its sides
+#define SQUARE_MEDIAN     8  // distance from the center of a square to its sides
 #define SQUARE_SIZE    (SQUARE_MEDIAN * 2)   // Width and height of square.
 
 // Starting position of the focus block //
-#define BLOCK_START_X    151
-#define BLOCK_START_Y    59
+#define BLOCK_START_X    96
+#define BLOCK_START_Y    32
 
 // Location on game screen for displaying... //
-#define LEVEL_RECT_X        42  // current level
-#define LEVEL_RECT_Y        320
-#define SCORE_RECT_X         42  // current score
-#define SCORE_RECT_Y        340
-#define NEEDED_SCORE_RECT_X 42  // score needed for next level
-#define NEEDED_SCORE_RECT_Y 360
-#define NEXT_BLOCK_CIRCLE_X 214 // next block in line to be focus block
-#define NEXT_BLOCK_CIRCLE_Y 347
+#define LEVEL_RECT_X        224  // current level
+#define LEVEL_RECT_Y         32
+#define SCORE_RECT_X        224  // current score
+#define SCORE_RECT_Y         64
+#define NEEDED_SCORE_RECT_X 224  // score needed for next level
+#define NEEDED_SCORE_RECT_Y  96
+#define NEXT_BLOCK_CIRCLE_X 256 // next block in line to be focus block
+#define NEXT_BLOCK_CIRCLE_Y 192
 
 // Palette entry range used for color cycling.
 #define COLOR_CYCLING_START_INDEX     8
