@@ -124,11 +124,13 @@ void FallingBlocksGame::Init()
 
     // We start by adding a pointer to our exit state, this way //
     // it will be the last thing the player sees of the game.   //
-    m_StateStack.push(GAME_STATE_EXIT);
+//    m_StateStack.push(GAME_STATE_EXIT);
 
     // Then we add a pointer to our menu state, this will //
     // be the first thing the player sees of our game.    //
-    m_StateStack.push(GAME_STATE_MENU);
+//    m_StateStack.push(GAME_STATE_MENU);
+
+    m_StateStack.push(GAME_STATE_GAME);
 
     // Initialize the true type font library //
     TTF_Init();
@@ -475,7 +477,8 @@ void FallingBlocksGame::HandleMenuInput()
             // Start Game //
             if (m_Event.key.keysym.sym == SDLK_g)
             {
-                m_StateStack.push(GAME_STATE_GAME);
+//                m_StateStack.push(GAME_STATE_GAME);
+
                 return;  // this state is done, exit the function
             }
         }
@@ -666,8 +669,9 @@ void FallingBlocksGame::HandleWinLoseInput()
             {
                 m_StateStack.pop();
 
-                m_StateStack.push(GAME_STATE_EXIT);
-                m_StateStack.push(GAME_STATE_MENU);
+//                m_StateStack.push(GAME_STATE_EXIT);
+//                m_StateStack.push(GAME_STATE_MENU);
+
                 return;
             }
         }
@@ -866,7 +870,7 @@ void FallingBlocksGame::CheckWin()
         }
 
         // Push the victory state onto the stack //
-        m_StateStack.push(GAME_STATE_WON);
+//        m_StateStack.push(GAME_STATE_WON);
     }
 }
 
@@ -891,7 +895,7 @@ void FallingBlocksGame::CheckLoss()
         }
 
         // Push the losing state onto the stack //
-        m_StateStack.push(GAME_STATE_LOST);
+//        m_StateStack.push(GAME_STATE_LOST);
     }
 }
 
