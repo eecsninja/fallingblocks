@@ -4,7 +4,6 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 #include <stdlib.h>
-#include <time.h>    // We use time() to seed our random generator.
 
 #include "Defines.h" // Our defines header
 #include "Enums.h"   // Our enums header
@@ -102,7 +101,7 @@ bool FallingBlocksGame::Init()
     m_OldSquares.Init();
 
     // Seed our random number generator //
-    srand( time(0) );
+    srand(System::GetTicks());
 
     // Initialize blocks and set them to their proper locations. //
     m_FocusBlock = cBlock(BLOCK_START_X, BLOCK_START_Y, (rand()%7));
