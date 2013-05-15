@@ -320,7 +320,7 @@ void Screen::DisplayText(const char* text, int x, int y, int size,
     SDL_Surface* temp = TTF_RenderText_Shaded(font, text, foreground, background);
 
     // A structure storing the destination of our text. //
-    SDL_Rect destination = { x * SQUARE_SIZE, y * SQUARE_SIZE, 0, 0 };
+    SDL_Rect destination = { x * TEXT_SIZE, y * TEXT_SIZE, 0, 0 };
 
     // Blit the text surface to our window surface. //
     SDL_BlitSurface(temp, NULL, m_Window, &destination);

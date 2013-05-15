@@ -42,17 +42,21 @@
 #define SQUARE_MEDIAN     8  // distance from the center of a square to its sides
 #define SQUARE_SIZE    (SQUARE_MEDIAN * 2)   // Width and height of square.
 
+// Text characters are 8x8.
+#define TEXT_SIZE         8
+
 // Starting position of the focus block //
 #define BLOCK_START_X     6  // 96 / SQUARE_SIZE
 #define BLOCK_START_Y     2  // 32 / SQUARE_SIZE
 
 // Location on game screen for displaying... //
-#define LEVEL_RECT_X         14  // current level
-#define LEVEL_RECT_Y          2  // (224 and 32) / SQUARE_SIZE
-#define SCORE_RECT_X         14  // current score
-#define SCORE_RECT_Y          4  // (224 and 64) / SQUARE_SIZE
-#define NEEDED_SCORE_RECT_X  14  // score needed for next level
-#define NEEDED_SCORE_RECT_Y   6  // (224 and 96) / SQUARE_SIZE
+#define LEVEL_RECT_X         28  // current level (in text grid coordinates)
+#define LEVEL_RECT_Y          4
+#define SCORE_RECT_X         28  // current score (in text grid coordinates)
+#define SCORE_RECT_Y          8
+#define NEEDED_SCORE_RECT_X  28  // score needed for next level
+#define NEEDED_SCORE_RECT_Y  12  //  (in text grid coordinates)
+
 #define NEXT_BLOCK_CIRCLE_X  16  // next block in line to be focus block
 #define NEXT_BLOCK_CIRCLE_Y  11  // (256 and 176) / SQUARE_SIZE
 
