@@ -238,6 +238,9 @@ void FallingBlocksGame::Game()
             HandleBottomCollision();
         }
 
+        m_Screen.WaitForNoVblank();  // Wait for vertical refresh if applicable.
+        m_Screen.WaitForVblank();
+
         // Make sure nothing from the last frame is still drawn. //
         ClearScreen();
 

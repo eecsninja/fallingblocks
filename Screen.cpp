@@ -9,6 +9,7 @@
 
 #include "cc_core.h"
 #include "cc_tile_layer.h"
+#include "registers.h"
 #include "tile_registers.h"
 #include "font_8x8.h"
 
@@ -313,6 +314,18 @@ void Screen::DisplayText(const char* text, int x, int y, int size,
     // Close the font. //
     TTF_CloseFont(font);
 #endif  // !defined(__AVR__)
+}
+
+void Screen::WaitForVblank() {
+#ifdef __AVR__
+      while(!(CC_GetRegister(CC_REG_OUTPUT_STATUS) & (1 << CC_REG_VBLANK)));
+#endif
+}
+
+void Screen::WaitForNoVblank() {
+#ifdef __AVR__
+      while(CC_GetRegister(CC_REG_OUTPUT_STATUS) & (1 << CC_REG_VBLANK));
+#endif
 }
 
 //  Aaron Cox, 2004 //

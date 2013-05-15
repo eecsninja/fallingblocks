@@ -72,6 +72,12 @@ class Screen {
     // Renders a string on the screen.
     void DisplayText(const char* text, int x, int y, int size,
                      int fR, int fG, int fB, int bR, int bG, int bB);
+
+    // Wait for the vertical blanking to start and end.  If waiting for it to
+    // start and it has already started, the function will immediately return.
+    // Same for waiting for it to end and it already ended.
+    void WaitForVblank();
+    void WaitForNoVblank();
 };
 
 //  Aaron Cox, 2004 //
