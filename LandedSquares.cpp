@@ -44,7 +44,7 @@ void LandedSquares::Draw(Screen* screen) const {
 }
 
 // Iterate through each square of each row, checking for collisions.
-bool LandedSquares::CheckCollision(int center_x, int center_y,
+bool LandedSquares::CheckCollision(int square_x, int square_y,
                                    int distance) const {
     for (int y = 0; y < MAX_NUM_LINES; ++y) {
         const SquareRow& row = *row_ptrs[y];
@@ -57,8 +57,8 @@ bool LandedSquares::CheckCollision(int center_x, int center_y,
             cSquare temp_square(0, 0, square.type);
             temp_square.SetX(GAME_AREA_LEFT + x * SQUARE_SIZE);
             temp_square.SetY(GAME_AREA_BOTTOM - (y + 1) * SQUARE_SIZE);
-            int dx = center_x - temp_square.GetCenterX();
-            int dy = center_y - temp_square.GetCenterY();
+            int dx = square_x - temp_square.GetX();
+            int dy = square_y - temp_square.GetY();
             if (abs(dx) < distance && abs(dy) < distance)
                 return true;
         }

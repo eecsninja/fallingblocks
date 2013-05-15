@@ -9,8 +9,10 @@
 
 // Main constructor takes location and type of block, //
 // and pointer to our bitmap surface. //
-cSquare::cSquare(int x, int y, int type)
-        : m_CenterX(x), m_CenterY(y), m_BlockType(type)
+cSquare::cSquare(int center_x, int center_y, int type) :
+        m_X(center_x - SQUARE_MEDIAN),
+        m_Y(center_y - SQUARE_MEDIAN),
+        m_BlockType(type)
 {
 }
 
@@ -28,13 +30,13 @@ void cSquare::Move(Direction dir)
     switch (dir)
     {
     case LEFT:
-        m_CenterX -= SQUARE_SIZE;
+        m_X -= SQUARE_SIZE;
         break;
     case RIGHT:
-        m_CenterX += SQUARE_SIZE;
+        m_X += SQUARE_SIZE;
         break;
     case DOWN:
-        m_CenterY += SQUARE_SIZE;
+        m_Y += SQUARE_SIZE;
         break;
     }
 }

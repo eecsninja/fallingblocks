@@ -47,7 +47,7 @@ class LandedSquares {
     void Draw(Screen* screen) const;
 
     // Iterate through each square of each row, checking for collisions.
-    bool CheckCollision(int center_x, int center_y, int distance) const;
+    bool CheckCollision(int square_x, int square_y, int distance) const;
 
     // Return number of lines cleared or zero if no lines were cleared.
     int CheckCompletedLines();

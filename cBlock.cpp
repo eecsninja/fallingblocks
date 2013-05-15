@@ -146,20 +146,14 @@ void cBlock::Rotate()
 
     for (int i=0; i < CBLOCK_NUM_SQUARES; ++i)
     {
-        x1 = m_Squares[i].GetCenterX();
-        y1 = m_Squares[i].GetCenterY();
+        x1 = m_Squares[i].GetX() - m_CenterX;
+        y1 = m_Squares[i].GetY() - m_CenterY;
 
-        x1 -= m_CenterX;
-        y1 -= m_CenterY;
+        x2 = m_CenterX - y1;
+        y2 = m_CenterY + x1;
 
-        x2 = - y1;
-        y2 = x1;
-
-        x2 += m_CenterX;
-        y2 += m_CenterY;
-
-        m_Squares[i].SetCenterX(x2);
-        m_Squares[i].SetCenterY(y2);
+        m_Squares[i].SetX(x2);
+        m_Squares[i].SetY(y2);
     }
 }
 
@@ -171,17 +165,11 @@ void cBlock::GetRotatedSquares(int* array) const
 
     for (int i=0; i < CBLOCK_NUM_SQUARES; ++i)
     {
-        x1 = m_Squares[i].GetCenterX();
-        y1 = m_Squares[i].GetCenterY();
+        x1 = m_Squares[i].GetX() - m_CenterX;
+        y1 = m_Squares[i].GetY() - m_CenterY;
 
-        x1 -= m_CenterX;
-        y1 -= m_CenterY;
-
-        x2 = - y1;
-        y2 = x1;
-
-        x2 += m_CenterX;
-        y2 += m_CenterY;
+        x2 = m_CenterX - y1;
+        y2 = m_CenterY + x1;
 
         array[i*2]   = x2;
         array[i*2+1] = y2;

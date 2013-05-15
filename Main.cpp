@@ -494,31 +494,28 @@ bool FallingBlocksGame::CheckEntityCollisions(
     // between two squares if they've collided.    //
     int distance = SQUARE_SIZE;
 
-    // Center of the given square //
-    int centerX = square.GetCenterX();
-    int centerY = square.GetCenterY();
+    // Top left of the square.
+    int x = square.GetX();
+    int y = square.GetY();
 
     // Determine the location of the square after moving //
     switch (dir)
     {
     case DOWN:
-        {
-            centerY += distance;
-        } break;
+        y += distance;
+        break;
 
     case LEFT:
-        {
-            centerX -= distance;
-        } break;
+        x -= distance;
+        break;
 
     case RIGHT:
-        {
-            centerX += distance;
-        } break;
+        x += distance;
+        break;
     }
 
     // Check collision against landed squares //
-    if (m_OldSquares.CheckCollision(centerX, centerY, distance))
+    if (m_OldSquares.CheckCollision(x, y, distance))
         return true;
 
     return false;
@@ -543,19 +540,19 @@ bool FallingBlocksGame::CheckEntityCollisions(
 // Check collisions between a given square and the sides of the game area //
 bool FallingBlocksGame::CheckWallCollisions(
         const cSquare& square, Direction dir) {
-    // Get the center of the square //
-    int x = square.GetCenterX();
-    int y = square.GetCenterY();
+    // Get the location of the square
+    int x = square.GetX();
+    int y = square.GetY();
 
     // Get the location of the square after moving and see if its out of bounds //
     switch (dir)
     {
     case DOWN:
-        return (y + SQUARE_SIZE > GAME_AREA_BOTTOM);
+        return (y + SQUARE_SIZE * 2 > GAME_AREA_BOTTOM);
     case LEFT:
         return (x - SQUARE_SIZE < GAME_AREA_LEFT);
     case RIGHT:
-        return (x + SQUARE_SIZE > GAME_AREA_RIGHT);
+        return (x + SQUARE_SIZE * 2 > GAME_AREA_RIGHT);
     }
 
     return false;
@@ -591,11 +588,11 @@ bool FallingBlocksGame::CheckRotationCollisions(const cBlock& block)
     {
         // Check to see if the block will go out of bounds //
         if ( (rotated_squares[i*2] < GAME_AREA_LEFT) ||
-             (rotated_squares[i*2] > GAME_AREA_RIGHT) ) {
+             (rotated_squares[i*2] + SQUARE_SIZE > GAME_AREA_RIGHT) ) {
             return true;
         }
 
-        if ( rotated_squares[i*2+1] > GAME_AREA_BOTTOM )
+        if ( rotated_squares[i*2+1] + SQUARE_SIZE > GAME_AREA_BOTTOM )
             return true;
 
         // Check to see if the block will collide with any squares //
