@@ -289,6 +289,18 @@ void Screen::DrawSquare(const cSquare& square) {
 #endif  // defined(__AVR__)
 }
 
+void Screen::EraseSquare(const cSquare& square)
+{
+#ifdef __AVR__
+    int tile_x = square.GetX() / SQUARE_SIZE;
+    int tile_y = square.GetY() / SQUARE_SIZE;
+    uint16_t tile_value = NO_BLOCK;
+    CC_TileLayer_SetData(&tile_value, BLOCKS_LAYER_INDEX,
+                         (tile_x + tile_y * TILEMAP_WIDTH) * sizeof(tile_value),
+                         sizeof(tile_value));
+#endif  // defined(__AVR__)
+}
+
 void Screen::DisplayText(const char* text, int x, int y, int size,
                          int fR, int fG, int fB, int bR, int bG, int bB)
 {

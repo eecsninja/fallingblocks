@@ -71,6 +71,9 @@ class Screen {
     // Draw a square.
     void DrawSquare(const cSquare& square);
 
+    // Erase a square.
+    void EraseSquare(const cSquare& square);
+
     // Renders a string on the screen.
     void DisplayText(const char* text, int x, int y, int size,
                      int fR, int fG, int fB, int bR, int bG, int bB);

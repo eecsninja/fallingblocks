@@ -22,6 +22,8 @@ class FallingBlocksGame {
     uint32_t       m_Timer;            // Our timer is just an integer
     cBlock         m_FocusBlock;       // The block the player is controlling
     cBlock         m_NextBlock;        // The next block to be the focus block
+    cBlock         m_OldFocusBlock;    // The previous focus block.
+    cBlock         m_OldNextBlock;     // The previous next block.
     LandedSquares  m_OldSquares;       // The squares that have landed.
     uint32_t       m_Score;            // Players current score
     int            m_Level;            // Current level player is on
@@ -253,6 +255,12 @@ void FallingBlocksGame::Game()
 
         m_Screen.WaitForNoVblank();  // Wait for vertical refresh if applicable.
         m_Screen.WaitForVblank();
+
+        // Erase the squares.  They only need to be erased when the focus block
+        // moves or the next block gets updated.  But we don't know when that
+        // will happen (need to erase during blanking).  This doesn't take long.
+        m_OldFocusBlock.Erase(&m_Screen);
+        m_OldNextBlock.Erase(&m_Screen);
 
         // Make sure nothing from the last frame is still drawn. //
         ClearScreen();
@@ -660,11 +668,13 @@ void FallingBlocksGame::ChangeFocusBlock()
     for (int i = 0; i < CBLOCK_NUM_SQUARES; ++i)
         m_OldSquares.Add(square_array[i]);
 
+    m_OldFocusBlock = m_FocusBlock;
     m_FocusBlock = m_NextBlock; // set the focus block to the next block
     m_FocusBlock.SetupSquares(BLOCK_START_X * SQUARE_SIZE,
                               BLOCK_START_Y * SQUARE_SIZE);
 
     // Set the next block to a new block of random type //
+    m_OldNextBlock = m_NextBlock;
     m_NextBlock = cBlock(NEXT_BLOCK_CIRCLE_X * SQUARE_SIZE,
                          NEXT_BLOCK_CIRCLE_Y * SQUARE_SIZE, (rand()%7));
 }

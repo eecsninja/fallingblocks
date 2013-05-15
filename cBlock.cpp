@@ -116,6 +116,13 @@ void cBlock::Draw(Screen* screen) const
     }
 }
 
+void cBlock::Erase(Screen* screen) const
+{
+    for (int i = 0; i < CBLOCK_NUM_SQUARES; ++i)
+        screen->EraseSquare(m_Squares[i]);
+}
+
+
 // Move() simply changes the block's center and calls the squares' move functions. //
 void cBlock::Move(Direction dir)
 {

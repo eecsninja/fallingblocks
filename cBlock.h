@@ -39,6 +39,9 @@ public:
     // Draw() simply iterates through the squares and calls their Draw() functions. //
     void Draw(Screen* screen) const;
 
+    // Erase the block squares.
+    void Erase(Screen* screen) const;
+
     // Move() simply changes the block's center and calls the squares' move functions. //
     void Move(Direction dir);
 
