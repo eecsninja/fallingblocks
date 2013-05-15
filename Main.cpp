@@ -90,6 +90,8 @@ int main(int argc, char **argv)
         return -1;
 
     FallingBlocksGame game;
+    printf("Game data size: %u bytes\n", sizeof(game));
+
     game.Init();
 
     game.MainLoop();

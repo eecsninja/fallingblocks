@@ -22,6 +22,9 @@
 #define BAUD   57600
 #define MYUBRR    16
 
+extern uint8_t __bss_end;
+extern uint8_t __stack;
+
 static int uart_putchar(char c, FILE *stream);
 static int uart_getchar(FILE *stream);
 
@@ -101,6 +104,9 @@ static void system_init() {
     init_uart();
     init_timer();
     init_external_memory();
+
+    printf("Stack ranges from 0x%x (%u) to 0x%x (%u)\n",
+           &__bss_end, &__bss_end, &__stack, &__stack);
 }
 
 ///////////// End embedded system definitions ////////////////
