@@ -36,8 +36,8 @@ void LandedSquares::Draw(Screen* screen) const {
             if (!square.valid)
                 continue;
             cSquare temp_square(0, 0, square.type);
-            temp_square.SetX(GAME_AREA_LEFT + x * SQUARE_SIZE);
-            temp_square.SetY(GAME_AREA_BOTTOM - (y + 1) * SQUARE_SIZE);
+            temp_square.SetX((GAME_AREA_LEFT + x) * SQUARE_SIZE);
+            temp_square.SetY((GAME_AREA_BOTTOM - (y + 1)) * SQUARE_SIZE);
             temp_square.Draw(screen);
         }
     }
@@ -55,8 +55,8 @@ bool LandedSquares::CheckCollision(int square_x, int square_y,
             if (!square.valid)
                 continue;
             cSquare temp_square(0, 0, square.type);
-            temp_square.SetX(GAME_AREA_LEFT + x * SQUARE_SIZE);
-            temp_square.SetY(GAME_AREA_BOTTOM - (y + 1) * SQUARE_SIZE);
+            temp_square.SetX((GAME_AREA_LEFT + x) * SQUARE_SIZE);
+            temp_square.SetY((GAME_AREA_BOTTOM - (y + 1)) * SQUARE_SIZE);
             int dx = square_x - temp_square.GetX();
             int dy = square_y - temp_square.GetY();
             if (abs(dx) < distance && abs(dy) < distance)
@@ -123,8 +123,8 @@ int LandedSquares::CheckCompletedLines() {
 
 // Add a square that has landed.
 void LandedSquares::Add(const cSquare& square) {
-    int x = (square.GetX() - GAME_AREA_LEFT) / SQUARE_SIZE;
-    int y = (GAME_AREA_BOTTOM - square.GetY() - SQUARE_SIZE) / SQUARE_SIZE;
+    int x = square.GetX() / SQUARE_SIZE - GAME_AREA_LEFT;
+    int y = GAME_AREA_BOTTOM - square.GetY() / SQUARE_SIZE - 1;
     row_ptrs[y]->squares[x].type = square.GetType();
     row_ptrs[y]->squares[x].valid = true;
     row_ptrs[y]->empty = false;

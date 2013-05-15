@@ -104,8 +104,10 @@ bool FallingBlocksGame::Init()
     srand(System::GetTicks());
 
     // Initialize blocks and set them to their proper locations. //
-    m_FocusBlock = cBlock(BLOCK_START_X, BLOCK_START_Y, (rand()%7));
-    m_NextBlock  = cBlock(NEXT_BLOCK_CIRCLE_X, NEXT_BLOCK_CIRCLE_Y, (rand()%7));
+    m_FocusBlock = cBlock(BLOCK_START_X * SQUARE_SIZE,
+                          BLOCK_START_Y * SQUARE_SIZE, (rand()%7));
+    m_NextBlock  = cBlock(NEXT_BLOCK_CIRCLE_X * SQUARE_SIZE,
+                          NEXT_BLOCK_CIRCLE_Y * SQUARE_SIZE, (rand()%7));
 
     // We start by adding a pointer to our exit state, this way //
     // it will be the last thing the player sees of the game.   //
@@ -173,8 +175,8 @@ void FallingBlocksGame::Menu()
         // Make sure nothing from the last frame is still drawn //
         ClearScreen();
 
-        DisplayText("Start (G)ame", 120, 120, 12, 255, 255, 255, 0, 0, 0);
-        DisplayText("(Q)uit Game",  120, 150, 12, 255, 255, 255, 0, 0, 0);
+        DisplayText("Start (G)ame", 8, 8, 12, 255, 255, 255, 0, 0, 0);
+        DisplayText("(Q)uit Game",  8, 9, 12, 255, 255, 255, 0, 0, 0);
 
         // Update video screen.
         m_Screen.Update();
@@ -289,7 +291,7 @@ void FallingBlocksGame::Exit()
         // Make sure nothing from the last frame is still drawn. //
         ClearScreen();
 
-        DisplayText("Quit Game (Y or N)?", 100, 150, 12, 255, 255, 255, 0, 0, 0);
+        DisplayText("Quit Game (Y or N)?", 6, 9, 12, 255, 255, 255, 0, 0, 0);
 
         // Update video screen.
         m_Screen.Update();
@@ -310,8 +312,8 @@ void FallingBlocksGame::GameWon()
 
         ClearScreen();
 
-        DisplayText("You Win!!!", 100, 120, 12, 255, 255, 255, 0, 0, 0);
-        DisplayText("Quit Game (Y or N)?", 100, 140, 12, 255, 255, 255, 0, 0, 0);
+        DisplayText("You Win!!!", 6, 8, 12, 255, 255, 255, 0, 0, 0);
+        DisplayText("Quit Game (Y or N)?", 6, 9, 12, 255, 255, 255, 0, 0, 0);
 
         // Update video screen.
         m_Screen.Update();
@@ -329,8 +331,8 @@ void FallingBlocksGame::GameLost()
 
         ClearScreen();
 
-        DisplayText("You Lose.", 100, 120, 12, 255, 255, 255, 0, 0, 0);
-        DisplayText("Quit Game (Y or N)?", 100, 140, 12, 255, 255, 255, 0, 0, 0);
+        DisplayText("You Lose.", 6, 8, 12, 255, 255, 255, 0, 0, 0);
+        DisplayText("Quit Game (Y or N)?", 6, 9, 12, 255, 255, 255, 0, 0, 0);
 
         // Update video screen.
         m_Screen.Update();
@@ -548,11 +550,11 @@ bool FallingBlocksGame::CheckWallCollisions(
     switch (dir)
     {
     case DOWN:
-        return (y + SQUARE_SIZE * 2 > GAME_AREA_BOTTOM);
+        return (y + SQUARE_SIZE * 2 > GAME_AREA_BOTTOM * SQUARE_SIZE);
     case LEFT:
-        return (x - SQUARE_SIZE < GAME_AREA_LEFT);
+        return (x - SQUARE_SIZE < GAME_AREA_LEFT * SQUARE_SIZE);
     case RIGHT:
-        return (x + SQUARE_SIZE * 2 > GAME_AREA_RIGHT);
+        return (x + SQUARE_SIZE * 2 > GAME_AREA_RIGHT * SQUARE_SIZE);
     }
 
     return false;
@@ -587,13 +589,16 @@ bool FallingBlocksGame::CheckRotationCollisions(const cBlock& block)
     for (int i = 0; i < CBLOCK_NUM_SQUARES; ++i)
     {
         // Check to see if the block will go out of bounds //
-        if ( (rotated_squares[i*2] < GAME_AREA_LEFT) ||
-             (rotated_squares[i*2] + SQUARE_SIZE > GAME_AREA_RIGHT) ) {
+        if ( (rotated_squares[i*2] < GAME_AREA_LEFT * SQUARE_SIZE) ||
+             (rotated_squares[i*2] + SQUARE_SIZE >
+                    GAME_AREA_RIGHT * SQUARE_SIZE) ) {
             return true;
         }
 
-        if ( rotated_squares[i*2+1] + SQUARE_SIZE > GAME_AREA_BOTTOM )
+        if (rotated_squares[i*2+1] + SQUARE_SIZE >
+                    GAME_AREA_BOTTOM * SQUARE_SIZE ) {
             return true;
+        }
 
         // Check to see if the block will collide with any squares //
         if (m_OldSquares.CheckCollision(rotated_squares[i*2],
@@ -644,10 +649,12 @@ void FallingBlocksGame::ChangeFocusBlock()
         m_OldSquares.Add(square_array[i]);
 
     m_FocusBlock = m_NextBlock; // set the focus block to the next block
-    m_FocusBlock.SetupSquares(BLOCK_START_X, BLOCK_START_Y);
+    m_FocusBlock.SetupSquares(BLOCK_START_X * SQUARE_SIZE,
+                              BLOCK_START_Y * SQUARE_SIZE);
 
     // Set the next block to a new block of random type //
-    m_NextBlock = cBlock(NEXT_BLOCK_CIRCLE_X, NEXT_BLOCK_CIRCLE_Y, (rand()%7));
+    m_NextBlock = cBlock(NEXT_BLOCK_CIRCLE_X * SQUARE_SIZE,
+                         NEXT_BLOCK_CIRCLE_Y * SQUARE_SIZE, (rand()%7));
 }
 
 // Return amount of lines cleared or zero if no lines were cleared //

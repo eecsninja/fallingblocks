@@ -39,6 +39,8 @@ public:
     // Accessors //
     int GetX() const { return m_X; }
     int GetY() const { return m_Y; }
+    int GetGridX() const { return m_X / SQUARE_SIZE; }
+    int GetGridY() const { return m_Y / SQUARE_SIZE; }
     int GetType() const { return m_BlockType; }
 
     // Mutators //
