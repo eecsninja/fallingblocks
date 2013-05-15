@@ -305,7 +305,10 @@ void Screen::EraseSquare(const cSquare& square)
 void Screen::DisplayText(const char* text, int x, int y, int size,
                          int fR, int fG, int fB, int bR, int bG, int bB)
 {
-#ifndef __AVR__
+#ifdef __AVR__
+    CC_TileLayer_SetData(text, TEXT_LAYER_INDEX, x + y * TILEMAP_WIDTH * 2,
+                         strlen(text));
+#else
     // Open our font and set its size to the given parameter //
     TTF_Font* font = TTF_OpenFont("arial.ttf", size);
 
@@ -327,7 +330,7 @@ void Screen::DisplayText(const char* text, int x, int y, int size,
 
     // Close the font. //
     TTF_CloseFont(font);
-#endif  // !defined(__AVR__)
+#endif  // defined(__AVR__)
 }
 
 void Screen::WaitForVblank() {
