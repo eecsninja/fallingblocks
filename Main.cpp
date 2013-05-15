@@ -19,11 +19,11 @@ class FallingBlocksGame {
   private:
     StateStack     m_StateStack;       // Our state stack
     Screen         m_Screen;           // Video screen controller.
-    int            m_Timer;            // Our timer is just an integer
+    uint32_t       m_Timer;            // Our timer is just an integer
     cBlock         m_FocusBlock;       // The block the player is controlling
     cBlock         m_NextBlock;        // The next block to be the focus block
     LandedSquares  m_OldSquares;       // The squares that have landed.
-    int            m_Score;            // Players current score
+    uint32_t       m_Score;            // Players current score
     int            m_Level;            // Current level player is on
     int            m_FocusBlockSpeed;  // Speed of the focus block
 
