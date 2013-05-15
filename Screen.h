@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <stdint.h>
 #include <stdio.h>
 
 #ifndef __AVR__
@@ -22,6 +23,11 @@ class Screen {
     SDL_Surface*   m_SquaresBitmap;    // Our squares bitmap
     SDL_Surface*   m_Window;           // Our backbuffer
 
+    // VRAM offsets for font, UI, and block images.
+    uint16_t m_FontDataOffset;
+    uint16_t m_UIDataOffset;
+    uint16_t m_BlocksDataOffset;
+
 #ifndef __AVR__
     // Rotating part of original palette.
     SDL_Color base_colors[255];
@@ -31,6 +37,9 @@ class Screen {
 
   public:
     Screen() : m_Bitmap(NULL), m_SquaresBitmap(NULL), m_Window(NULL),
+               m_FontDataOffset(0),
+               m_UIDataOffset(0),
+               m_BlocksDataOffset(0),
                m_CurrentLevel(0){}
 
     // Sets up and breaks down the video screen.

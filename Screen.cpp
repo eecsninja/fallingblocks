@@ -5,9 +5,29 @@
 
 #include "Screen.h"
 
-#ifndef __AVR__
+#ifdef __AVR__
+
+#include "cc_core.h"
+#include "cc_tile_layer.h"
+#include "tile_registers.h"
+#include "font_8x8.h"
+
+// Image, palette, and tilemap data.
+#include "Data/squares_palette.h"
+#include "Data/squares_tileset.h"
+#include "Data/ui_palette.h"
+#include "Data/ui_tilemap.h"
+#include "Data/ui_tileset.h"
+
+#else
+
 #include <SDL/SDL_ttf.h> // True Type Font header
+
 #endif
+
+#include "Defines.h"
+
+#define TILEMAP_WIDTH       32
 
 namespace {
 
@@ -31,7 +51,114 @@ void Screen::Init() {
     // Setup our window's dimensions, bits-per-pixel (0 tells SDL to choose for us), //
     // and video format (SDL_ANYFORMAT leaves the decision to SDL). This function    //
     // returns a pointer to our window which we assign to m_Window.                  //
-#ifndef __AVR__
+#ifdef __AVR__
+    CC_Init();
+
+    // Load images.
+
+    // Set up font.
+    m_FontDataOffset = 0;
+    uint16_t offset = m_FontDataOffset;
+    for (int i = 0; i < NUM_FONT_CHARS; ++i) {
+        char c = i;
+        for (int line = 0; line < NUM_FONT_CHAR_LINES; ++line) {
+            uint8_t line_data = get_font_line(c, line);
+            uint8_t line_buffer[8];
+            for (int b = 0; b < sizeof(line_buffer); ++b)
+                line_buffer[b] = (line_data & (1 << b)) ? 1 : 0;
+            CC_SetVRAMData(line_buffer, offset, sizeof(line_buffer));
+            offset += sizeof(line_buffer);
+        }
+    }
+
+    // Load UI image.
+    m_UIDataOffset = offset;
+    uint32_t value;
+    for (int i = 0; i < UI_TILESET_BMP_RAW_DATA_SIZE / sizeof(value); ++i) {
+        value = pgm_read_dword(&ui_tileset_bmp_raw_data32[i]);
+        CC_SetVRAMData(&value, offset, sizeof(value));
+        offset += sizeof(value);
+    }
+
+    // Load squares data.
+    m_BlocksDataOffset = offset;
+    for (int i = 0; i < SQUARES_BMP_RAW_DATA_SIZE / sizeof(value); ++i) {
+        value = pgm_read_dword(&squares_bmp_raw_data32[i]);
+        CC_SetVRAMData(&value, offset, sizeof(value));
+        offset += sizeof(value);
+    }
+
+    // Load palette data.
+    for (int i = 0; i < UI_TILESET_BMP_PAL_DATA_SIZE / sizeof(value); ++i) {
+        value = pgm_read_dword(&ui_tileset_bmp_pal_data32[i]);
+        CC_SetPaletteData(&value, UI_PALETTE_INDEX, i * sizeof(value),
+                          sizeof(value));
+    }
+    for (int i = 0; i < SQUARES_BMP_PAL_DATA_SIZE / sizeof(value); ++i) {
+        value = pgm_read_dword(&squares_bmp_pal_data32[i]);
+        CC_SetPaletteData(&value, BLOCKS_PALETTE_INDEX, i * sizeof(value),
+                          sizeof(value));
+    }
+    uint32_t black = 0x00000000;
+    uint32_t white = 0xffffffff;
+    CC_SetPaletteData(&black, TEXT_PALETTE_INDEX, 0, sizeof(black));
+    CC_SetPaletteData(&white, TEXT_PALETTE_INDEX, sizeof(uint32_t) * 0xff,
+                      sizeof(white));
+
+    // Fill in UI tilemap.
+    int x = 0, y = 0;
+    for (int i = 0; i < UI_TMX_LAYER0_DAT_DATA_SIZE / sizeof(uint16_t); ++i) {
+        uint16_t value = pgm_read_word(&ui_tmx_layer0_dat_data16[i]);
+        CC_TileLayer_SetData(&value, UI_LAYER_INDEX,
+                             (x + y * TILEMAP_WIDTH) * sizeof(value),
+                             sizeof(value));
+        ++x;
+        // Tile map is not aligned to |TILEMAP_WIDTH|.  Its width is
+        // |WINDOW_WIDTH| / |SQUARE_SIZE|.
+        if (x >= WINDOW_WIDTH / SQUARE_SIZE) {
+            x -= WINDOW_WIDTH / SQUARE_SIZE;
+            ++y;
+        }
+    }
+
+    // Set up and enable tile layers.
+    CC_TileLayer_SetRegister(MENU_LAYER_INDEX, TILE_CTRL0,
+                             (1 << TILE_LAYER_ENABLED) |
+                             (1 << TILE_ENABLE_8x8) |
+                             (1 << TILE_ENABLE_8_BIT) |
+                             (TEXT_PALETTE_INDEX << TILE_PALETTE_START));
+    CC_TileLayer_SetRegister(MENU_LAYER_INDEX, TILE_DATA_OFFSET,
+                             m_FontDataOffset);
+
+    CC_TileLayer_SetRegister(UI_LAYER_INDEX, TILE_CTRL0,
+                             (1 << TILE_LAYER_ENABLED) |
+                             (UI_PALETTE_INDEX << TILE_PALETTE_START));
+    CC_TileLayer_SetRegister(UI_LAYER_INDEX, TILE_DATA_OFFSET, m_UIDataOffset);
+
+    CC_TileLayer_SetRegister(TEXT_LAYER_INDEX, TILE_CTRL0,
+                             (1 << TILE_LAYER_ENABLED) |
+                             (1 << TILE_ENABLE_8x8) |
+                             (1 << TILE_ENABLE_8_BIT) |
+                             (1 << TILE_ENABLE_TRANSP) |
+                             (TEXT_PALETTE_INDEX << TILE_PALETTE_START));
+    CC_TileLayer_SetRegister(TEXT_LAYER_INDEX, TILE_DATA_OFFSET,
+                             m_FontDataOffset);
+    CC_TileLayer_SetRegister(TEXT_LAYER_INDEX, TILE_COLOR_KEY,
+                             DEFAULT_TILE_COLOR_KEY);
+
+    CC_TileLayer_SetRegister(BLOCKS_LAYER_INDEX, TILE_CTRL0,
+                             (1 << TILE_LAYER_ENABLED) |
+                             (1 << TILE_ENABLE_NOP) |
+                             (BLOCKS_PALETTE_INDEX << TILE_PALETTE_START));
+    CC_TileLayer_SetRegister(BLOCKS_LAYER_INDEX, TILE_DATA_OFFSET,
+                             m_BlocksDataOffset);
+    CC_TileLayer_SetRegister(BLOCKS_LAYER_INDEX, TILE_NOP_VALUE,
+                             DEFAULT_EMPTY_TILE_VALUE);
+
+    // Set up UI color
+    DrawBackground(1);
+
+#else
     m_Window = SDL_SetVideoMode(WINDOW_WIDTH, WINDOW_HEIGHT, 0, SDL_ANYFORMAT);
     // Set the title of our window //
     SDL_WM_SetCaption(WINDOW_CAPTION, 0);
@@ -52,7 +179,7 @@ void Screen::Init() {
 
     // Initialize the true type font library //
     TTF_Init();
-#endif  // !defined(__AVR__)
+#endif  // defined(__AVR__)
 }
 
 void Screen::Cleanup() {
@@ -112,14 +239,29 @@ void Screen::DrawBackground(int level)
 #endif  // !defined(__AVR__)
     }
 
-#ifndef __AVR__
+#ifdef __AVR__
+    // Clear the blocks layer.
+    uint16_t buffer[GAME_AREA_WIDTH];
+    for (int x = 0; x < GAME_AREA_WIDTH; ++x)
+        buffer[x] = NO_BLOCK;
+    for (int y = GAME_AREA_TOP; y < GAME_AREA_BOTTOM; ++y) {
+        CC_TileLayer_SetData(buffer, BLOCKS_LAYER_INDEX, y * TILEMAP_WIDTH,
+                             sizeof(buffer));
+    }
+#else
     SDL_Rect destination = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
     SDL_BlitSurface(m_Bitmap, NULL, m_Window, &destination);
-#endif  // !defined(__AVR__)
+#endif  // defined(__AVR__)
 }
 
 void Screen::DrawSquare(int x, int y, int w, int h, int type) {
-#ifndef __AVR__
+#ifdef __AVR__
+    int tile_x = x / SQUARE_SIZE;
+    int tile_y = y / SQUARE_SIZE;
+    uint16_t tile_value = type;
+    CC_TileLayer_SetData(&tile_value, BLOCKS_LAYER_INDEX, x + y * TILEMAP_WIDTH,
+                         sizeof(tile_value));
+#else
     // The bitmap of each color of square is arranged in the same order as the
     // block type enums.
     SDL_Rect source;
@@ -130,7 +272,7 @@ void Screen::DrawSquare(int x, int y, int w, int h, int type) {
 
     SDL_Rect destination = { x, y, w, h };
     SDL_BlitSurface(m_SquaresBitmap, &source, m_Window, &destination);
-#endif  // !defined(__AVR__)
+#endif  // defined(__AVR__)
 }
 
 void Screen::DisplayText(const char* text, int x, int y, int size,
