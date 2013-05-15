@@ -282,9 +282,10 @@ void Screen::DrawSquare(const cSquare& square) {
     source.w = SQUARE_SIZE;
     source.h = SQUARE_SIZE;
     source.x = 0;
-    source.y = type * source.h;
+    source.y = square.GetType() * source.h;
 
-    SDL_Rect destination = { x, y, w, h };
+    SDL_Rect destination =
+            { square.GetX(), square.GetY(), SQUARE_SIZE, SQUARE_SIZE };
     SDL_BlitSurface(m_SquaresBitmap, &source, m_Window, &destination);
 #endif  // defined(__AVR__)
 }
