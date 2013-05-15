@@ -26,10 +26,20 @@ class FallingBlocksGame {
     int            m_Score;            // Players current score
     int            m_Level;            // Current level player is on
     int            m_FocusBlockSpeed;  // Speed of the focus block
+
+    // These variables allow the user to hold the arrow keys down //
+    bool m_down_pressed;
+    bool m_left_pressed;
+    bool m_right_pressed;
+
  public:
     FallingBlocksGame() : m_Score(0),
                           m_Level(1),
-                          m_FocusBlockSpeed(INITIAL_SPEED) {}
+                          m_FocusBlockSpeed(INITIAL_SPEED),
+                          m_down_pressed(false),
+                          m_left_pressed(false),
+                          m_right_pressed(false)
+                          {}
 
     // Init, Main Loop, and Shutdown functions //
     bool Init();
@@ -387,11 +397,6 @@ void FallingBlocksGame::HandleMenuInput()
 // handles it for the main game state.     //
 void FallingBlocksGame::HandleGameInput()
 {
-    // These variables allow the user to hold the arrow keys down //
-    static bool down_pressed  = false;
-    static bool left_pressed  = false;
-    static bool right_pressed = false;
-
     // Get state of the input keys.
     System::KeyState key_state = System::GetKeyState();
 
@@ -409,12 +414,12 @@ void FallingBlocksGame::HandleGameInput()
     }
 
     // For the left, right, and down arrow keys, we just set a bool variable.
-    left_pressed = key_state.left;
-    right_pressed = key_state.right;
-    down_pressed = key_state.down;
+    m_left_pressed = key_state.left;
+    m_right_pressed = key_state.right;
+    m_down_pressed = key_state.down;
 
     // Now we handle the arrow keys, making sure to check for collisions //
-    if (down_pressed)
+    if (m_down_pressed)
     {
         if ( !CheckWallCollisions(m_FocusBlock, DOWN) &&
              !CheckEntityCollisions(m_FocusBlock, DOWN) )
@@ -422,7 +427,7 @@ void FallingBlocksGame::HandleGameInput()
             m_FocusBlock.Move(DOWN);
         }
     }
-    if (left_pressed)
+    if (m_left_pressed)
     {
         if ( !CheckWallCollisions(m_FocusBlock, LEFT) &&
              !CheckEntityCollisions(m_FocusBlock, LEFT) )
@@ -430,7 +435,7 @@ void FallingBlocksGame::HandleGameInput()
             m_FocusBlock.Move(LEFT);
         }
     }
-    if (right_pressed)
+    if (m_right_pressed)
     {
         if ( !CheckWallCollisions(m_FocusBlock, RIGHT) &&
              !CheckEntityCollisions(m_FocusBlock, RIGHT) )
