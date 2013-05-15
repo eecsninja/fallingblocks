@@ -18,6 +18,8 @@ struct SDL_Surface;
 #include "Defines.h"
 #include "Enums.h"
 
+class cSquare;
+
 class Screen {
   public:
 #ifdef __AVR__
@@ -66,8 +68,8 @@ class Screen {
     // Draw background.
     void DrawBackground(int level);
 
-    // Draw a square at (x, y) of size (w, h) and |type|.
-    void DrawSquare(int x, int y, int w, int h, int type);
+    // Draw a square.
+    void DrawSquare(const cSquare& square);
 
     // Renders a string on the screen.
     void DisplayText(const char* text, int x, int y, int size,

@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 #include "Defines.h"
+#include "Screen.h"
 
 #define abs(x)  ( ((x) >= 0) ? (x) : -(x) )
 
@@ -38,7 +39,7 @@ void LandedSquares::Draw(Screen* screen) const {
             cSquare temp_square(0, 0, square.type);
             temp_square.SetX((GAME_AREA_LEFT + x) * SQUARE_SIZE);
             temp_square.SetY((GAME_AREA_BOTTOM - (y + 1)) * SQUARE_SIZE);
-            temp_square.Draw(screen);
+            screen->DrawSquare(temp_square);
         }
     }
 }

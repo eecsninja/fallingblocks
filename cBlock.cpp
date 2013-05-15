@@ -7,6 +7,8 @@
 
 #include <stdio.h>
 
+#include "Screen.h"
+
 // The constructor just sets the block location and calls SetupSquares //
 cBlock::cBlock(int x, int y, int type) 
         : m_CenterX(x), m_CenterY(y), m_Type(type)
@@ -110,7 +112,7 @@ void cBlock::Draw(Screen* screen) const
 {
     for (int i = 0; i < CBLOCK_NUM_SQUARES; ++i)
     {
-        m_Squares[i].Draw(screen);
+        screen->DrawSquare(m_Squares[i]);
     }
 }
 

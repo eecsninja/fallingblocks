@@ -5,8 +5,6 @@
 
 #include "cSquare.h"
 
-#include "Screen.h"
-
 // Main constructor takes location and type of block, //
 // and pointer to our bitmap surface. //
 cSquare::cSquare(int center_x, int center_y, int type) :
@@ -14,13 +12,6 @@ cSquare::cSquare(int center_x, int center_y, int type) :
         m_Y(center_y - SQUARE_MEDIAN),
         m_BlockType(type)
 {
-}
-
-// Draw() takes a pointer to the surface to draw to (our window) //
-void cSquare::Draw(Screen* screen) const
-{
-    // Draw at square's current location. Remember that m_X and m_Y store the center of the square. //
-    screen->DrawSquare(GetX(), GetY(), SQUARE_SIZE, SQUARE_SIZE, m_BlockType);
 }
 
 // Remember, SQUARE_MEDIAN represents the distance from the square's center to //

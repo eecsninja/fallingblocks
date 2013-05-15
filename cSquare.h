@@ -8,8 +8,6 @@
 #include "Enums.h"
 #include "Defines.h"
 
-class Screen;
-
 class cSquare
 {
 private:
@@ -28,9 +26,6 @@ public:
 
     // Main constructor takes center location and type of block.
     cSquare(int center_x, int center_y, int type);
-
-    // Draw() takes a pointer to the Screen controller.
-    void Draw(Screen* screen) const;
 
     // Remember, SQUARE_MEDIAN represents the distance from the square's center to //
     // its sides. SQUARE_MEDIAN*2 gives us the width and height of our squares.    //

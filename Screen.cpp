@@ -26,6 +26,7 @@
 
 #endif
 
+#include "cSquare.h"
 #include "Defines.h"
 
 #define TILEMAP_WIDTH       32
@@ -266,11 +267,11 @@ void Screen::DrawBackground(int level)
 #endif  // defined(__AVR__)
 }
 
-void Screen::DrawSquare(int x, int y, int w, int h, int type) {
+void Screen::DrawSquare(const cSquare& square) {
 #ifdef __AVR__
-    int tile_x = x / SQUARE_SIZE;
-    int tile_y = y / SQUARE_SIZE;
-    uint16_t tile_value = type;
+    int tile_x = square.GetX() / SQUARE_SIZE;
+    int tile_y = square.GetY() / SQUARE_SIZE;
+    uint16_t tile_value = square.GetType();
     CC_TileLayer_SetData(&tile_value, BLOCKS_LAYER_INDEX,
                          (tile_x + tile_y * TILEMAP_WIDTH) * sizeof(tile_value),
                          sizeof(tile_value));
