@@ -74,10 +74,10 @@ void cBlock::SetupSquares(int x, int y)
     case STRAIGHT_BLOCK:
         {
             // Top //
-            m_Squares[0] = cSquare(x + SQUARE_MEDIAN, y - (SQUARE_MEDIAN * 3), m_Type);
-            m_Squares[1] = cSquare(x + SQUARE_MEDIAN, y - SQUARE_MEDIAN, m_Type);
-            m_Squares[2] = cSquare(x + SQUARE_MEDIAN, y + SQUARE_MEDIAN, m_Type);
-            m_Squares[3] = cSquare(x + SQUARE_MEDIAN, y + (SQUARE_MEDIAN * 3), m_Type);
+            m_Squares[0] = cSquare(x + SQUARE_MEDIAN, y - SQUARE_MEDIAN, m_Type);
+            m_Squares[1] = cSquare(x + SQUARE_MEDIAN, y + SQUARE_MEDIAN, m_Type);
+            m_Squares[2] = cSquare(x + SQUARE_MEDIAN, y + 3*SQUARE_MEDIAN, m_Type);
+            m_Squares[3] = cSquare(x + SQUARE_MEDIAN, y + (SQUARE_MEDIAN * 5), m_Type);
             // Bottom //
         } break;
     case S_BLOCK:
