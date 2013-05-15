@@ -27,6 +27,9 @@ class FallingBlocksGame {
     int            m_Level;            // Current level player is on
     int            m_FocusBlockSpeed;  // Speed of the focus block
 
+    // Used to avoid repeating pressing the up key.
+    bool m_up_pressed;
+
     // These variables allow the user to hold the arrow keys down //
     bool m_down_pressed;
     bool m_left_pressed;
@@ -36,6 +39,7 @@ class FallingBlocksGame {
     FallingBlocksGame() : m_Score(0),
                           m_Level(1),
                           m_FocusBlockSpeed(INITIAL_SPEED),
+                          m_up_pressed(false),
                           m_down_pressed(false),
                           m_left_pressed(false),
                           m_right_pressed(false)
@@ -405,12 +409,13 @@ void FallingBlocksGame::HandleGameInput()
         return;  // this state is done, exit the function
     }
 
-    if (key_state.up)
+    if (key_state.up && !m_up_pressed)
     {
         // Check collisions before rotating.
         if (!CheckRotationCollisions(m_FocusBlock))
             m_FocusBlock.Rotate();
     }
+    m_up_pressed = key_state.up;
 
     // For the left, right, and down arrow keys, we just set a bool variable.
     m_left_pressed = key_state.left;
