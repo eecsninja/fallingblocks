@@ -254,8 +254,10 @@ void Screen::DrawBackground(int level)
     for (int x = 0; x < GAME_AREA_WIDTH; ++x)
         buffer[x] = NO_BLOCK;
     for (int y = GAME_AREA_TOP; y < GAME_AREA_BOTTOM; ++y) {
-        CC_TileLayer_SetData(buffer, BLOCKS_LAYER_INDEX, y * TILEMAP_WIDTH,
-                             sizeof(buffer));
+        CC_TileLayer_SetData(
+                buffer, BLOCKS_LAYER_INDEX,
+                (y * TILEMAP_WIDTH + GAME_AREA_LEFT) * sizeof(uint16_t),
+                sizeof(buffer));
     }
 #else
     SDL_Rect destination = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
@@ -268,7 +270,8 @@ void Screen::DrawSquare(int x, int y, int w, int h, int type) {
     int tile_x = x / SQUARE_SIZE;
     int tile_y = y / SQUARE_SIZE;
     uint16_t tile_value = type;
-    CC_TileLayer_SetData(&tile_value, BLOCKS_LAYER_INDEX, x + y * TILEMAP_WIDTH,
+    CC_TileLayer_SetData(&tile_value, BLOCKS_LAYER_INDEX,
+                         (tile_x + tile_y * TILEMAP_WIDTH) * sizeof(tile_value),
                          sizeof(tile_value));
 #else
     // The bitmap of each color of square is arranged in the same order as the
