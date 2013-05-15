@@ -6,6 +6,7 @@
 
 enum BlockType
 {
+    NO_BLOCK,
     SQUARE_BLOCK,
     T_BLOCK,
     L_BLOCK,
