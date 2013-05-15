@@ -280,17 +280,25 @@ void FallingBlocksGame::Game()
         // We need to display the text ("Score:", "Level:", "Needed Score:") as well as the //
         // associated value. To do this, we use the string function append(). This function //
         // takes a char string so we call itoa() and store the char string in temp.         //
-        char score[256];
-        char nextscore[256];
-        char level[256];
+        char string[256];
 
-        sprintf(score, "Score: %u", m_Score);
-        sprintf(nextscore, "Needed score: %u", m_Level*POINTS_PER_LEVEL);
-        sprintf(level, "Level: %u", m_Level);
+        sprintf(string, "Level %u", m_Level);
+        DisplayText(string, LEVEL_RECT_X, LEVEL_RECT_Y,
+                    8, 0, 0, 0, 255, 255, 255);
 
-        DisplayText(score, SCORE_RECT_X, SCORE_RECT_Y, 8, 0, 0, 0, 255, 255, 255);
-        DisplayText(nextscore, NEEDED_SCORE_RECT_X, NEEDED_SCORE_RECT_Y, 8, 0, 0, 0, 255, 255, 255);
-        DisplayText(level, LEVEL_RECT_X, LEVEL_RECT_Y, 8, 0, 0, 0, 255, 255, 255);
+        sprintf(string, "Score:");
+        DisplayText(string, SCORE_RECT_X, SCORE_RECT_Y,
+                    8, 0, 0, 0, 255, 255, 255);
+        sprintf(string, "      %5u", m_Score);
+        DisplayText(string, SCORE_RECT_X, SCORE_RECT_Y + 1,
+                    8, 0, 0, 0, 255, 255, 255);
+
+        sprintf(string, "Next level:");
+        DisplayText(string, NEEDED_SCORE_RECT_X, NEEDED_SCORE_RECT_Y,
+                    8, 0, 0, 0, 255, 255, 255);
+        sprintf(string, "      %5u", m_Level*POINTS_PER_LEVEL);
+        DisplayText(string, NEEDED_SCORE_RECT_X, NEEDED_SCORE_RECT_Y + 1,
+                    8, 0, 0, 0, 255, 255, 255);
 
         // Update video screen.
         m_Screen.Update();

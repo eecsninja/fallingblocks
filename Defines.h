@@ -55,7 +55,7 @@
 #define SCORE_RECT_X         28  // current score (in text grid coordinates)
 #define SCORE_RECT_Y          8
 #define NEEDED_SCORE_RECT_X  28  // score needed for next level
-#define NEEDED_SCORE_RECT_Y  12  //  (in text grid coordinates)
+#define NEEDED_SCORE_RECT_Y  13  //  (in text grid coordinates)
 
 #define NEXT_BLOCK_CIRCLE_X  16  // next block in line to be focus block
 #define NEXT_BLOCK_CIRCLE_Y  11  // (256 and 176) / SQUARE_SIZE
