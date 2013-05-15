@@ -42,7 +42,7 @@ class FallingBlocksGame {
                           {}
 
     // Init, Main Loop, and Shutdown functions //
-    bool Init();
+    void Init();
     void MainLoop();
     void Shutdown();
 
@@ -85,9 +85,12 @@ enum GameStates {
 
 int main(int argc, char **argv)
 {
-    FallingBlocksGame game;
-    if (!game.Init())
+    // Initialize SDL video and our timer //
+    if (!System::Init())
         return -1;
+
+    FallingBlocksGame game;
+    game.Init();
 
     game.MainLoop();
     game.Shutdown();
@@ -96,12 +99,8 @@ int main(int argc, char **argv)
 }
 
 // This function initializes our game //
-bool FallingBlocksGame::Init()
+void FallingBlocksGame::Init()
 {
-    // Initiliaze SDL video and our timer //
-    if (!System::Init())
-        return false;
-
     m_Screen.Init();
 
     // Get the number of ticks since system was initialized //
@@ -128,8 +127,6 @@ bool FallingBlocksGame::Init()
 //    m_StateStack.push(GAME_STATE_MENU);
 
     m_StateStack.push(GAME_STATE_GAME);
-
-    return true;
 }
 
 void FallingBlocksGame::MainLoop() {
