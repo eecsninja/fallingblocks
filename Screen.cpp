@@ -5,7 +5,7 @@
 
 #include "Screen.h"
 
-#ifdef RENDER_FONT
+#ifndef __AVR__
 #include <SDL/SDL_ttf.h> // True Type Font header
 #endif
 
@@ -14,6 +14,7 @@ namespace {
 const char kBitmapFile[] = "data/ui.bmp";
 const char kSquaresFile[] = "data/squares.bmp";
 
+#ifndef __AVR__
 // Different colors for the UI.
 const SDL_Color kColors[] = {
     { 255,  84,  17 },
@@ -22,6 +23,7 @@ const SDL_Color kColors[] = {
     { 255, 128,   0 },
     { 128,   0,  64 },
 };
+#endif
 
 }
 
@@ -29,6 +31,7 @@ void Screen::Init() {
     // Setup our window's dimensions, bits-per-pixel (0 tells SDL to choose for us), //
     // and video format (SDL_ANYFORMAT leaves the decision to SDL). This function    //
     // returns a pointer to our window which we assign to m_Window.                  //
+#ifndef __AVR__
     m_Window = SDL_SetVideoMode(WINDOW_WIDTH, WINDOW_HEIGHT, 0, SDL_ANYFORMAT);
     // Set the title of our window //
     SDL_WM_SetCaption(WINDOW_CAPTION, 0);
@@ -48,34 +51,37 @@ void Screen::Init() {
         fprintf(stderr, "Unable to open %s\n", kSquaresFile);
 
     // Initialize the true type font library //
-#ifdef RENDER_FONT
     TTF_Init();
-#endif
+#endif  // !defined(__AVR__)
 }
 
 void Screen::Cleanup() {
+#ifndef __AVR__
     // Free our surfaces //
     SDL_FreeSurface(m_Bitmap);
     SDL_FreeSurface(m_SquaresBitmap);
     SDL_FreeSurface(m_Window);
 
     // Shutdown the true type font library //
-#ifdef RENDER_FONT
     TTF_Quit();
-#endif
+#endif  // !defined(__AVR__)
 }
 
 void Screen::Update() {
+#ifndef __AVR__
     // Tell SDL to display our backbuffer. The four 0's will make //
     // SDL display the whole screen. //
     SDL_UpdateRect(m_Window, 0, 0, 0, 0);
+#endif
 }
 
 void Screen::Clear() {
+#ifndef __AVR__
     // This function just fills a surface with a given color. The //
     // first 0 tells SDL to fill the whole surface. The second 0  //
     // is for black. //
     SDL_FillRect(m_Window, 0, 0);
+#endif
 }
 
 // This function draws the background //
@@ -84,6 +90,7 @@ void Screen::DrawBackground(int level)
     if (m_CurrentLevel != level) {
         m_CurrentLevel = level;
 
+#ifndef __AVR__
         SDL_Color level_color;
         // Select a different UI color for each level.
         const int num_colors = sizeof(kColors) / sizeof(kColors[0]);
@@ -102,14 +109,17 @@ void Screen::DrawBackground(int level)
             SDL_SetColors(m_Bitmap, &new_color, i + COLOR_CYCLING_START_INDEX,
                           1);
         }
+#endif  // !defined(__AVR__)
     }
 
+#ifndef __AVR__
     SDL_Rect destination = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
     SDL_BlitSurface(m_Bitmap, NULL, m_Window, &destination);
+#endif  // !defined(__AVR__)
 }
 
 void Screen::DrawSquare(int x, int y, int w, int h, int type) {
-
+#ifndef __AVR__
     // The bitmap of each color of square is arranged in the same order as the
     // block type enums.
     SDL_Rect source;
@@ -120,12 +130,13 @@ void Screen::DrawSquare(int x, int y, int w, int h, int type) {
 
     SDL_Rect destination = { x, y, w, h };
     SDL_BlitSurface(m_SquaresBitmap, &source, m_Window, &destination);
+#endif  // !defined(__AVR__)
 }
 
 void Screen::DisplayText(const char* text, int x, int y, int size,
                          int fR, int fG, int fB, int bR, int bG, int bB)
 {
-#ifdef RENDER_FONT
+#ifndef __AVR__
     // Open our font and set its size to the given parameter //
     TTF_Font* font = TTF_OpenFont("arial.ttf", size);
 
@@ -147,7 +158,7 @@ void Screen::DisplayText(const char* text, int x, int y, int size,
 
     // Close the font. //
     TTF_CloseFont(font);
-#endif
+#endif  // !defined(__AVR__)
 }
 
 //  Aaron Cox, 2004 //

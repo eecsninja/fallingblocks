@@ -7,7 +7,11 @@
 
 #include <stdio.h>
 
+#ifndef __AVR__
 #include <SDL/SDL.h>
+#else
+struct SDL_Surface;
+#endif
 
 #include "Defines.h"
 #include "Enums.h"
@@ -18,8 +22,10 @@ class Screen {
     SDL_Surface*   m_SquaresBitmap;    // Our squares bitmap
     SDL_Surface*   m_Window;           // Our backbuffer
 
+#ifndef __AVR__
     // Rotating part of original palette.
     SDL_Color base_colors[255];
+#endif
 
     int m_CurrentLevel;                // Current level, used for level colors.
 
