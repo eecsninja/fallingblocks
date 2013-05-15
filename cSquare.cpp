@@ -5,8 +5,6 @@
 
 #include "cSquare.h"
 
-#include <SDL/SDL.h>
-
 #include "Screen.h"
 
 // Main constructor takes location and type of block, //

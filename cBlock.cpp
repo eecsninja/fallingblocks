@@ -7,8 +7,6 @@
 
 #include <stdio.h>
 
-#include <SDL/SDL.h>
-
 // The constructor just sets the block location and calls SetupSquares //
 cBlock::cBlock(int x, int y, int type) 
         : m_CenterX(x), m_CenterY(y), m_Type(type)
