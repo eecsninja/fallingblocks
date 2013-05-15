@@ -34,16 +34,14 @@ namespace {
 const char kBitmapFile[] = "data/ui.bmp";
 const char kSquaresFile[] = "data/squares.bmp";
 
-#ifndef __AVR__
 // Different colors for the UI.
-const SDL_Color kColors[] = {
+const Screen::Color kColors[] = {
     { 255,  84,  17 },
     { 202, 176,   2 },
     {   1,  99, 231 },
     { 255, 128,   0 },
     { 128,   0,  64 },
 };
-#endif
 
 }
 
@@ -94,6 +92,12 @@ void Screen::Init() {
         CC_SetPaletteData(&value, UI_PALETTE_INDEX, i * sizeof(value),
                           sizeof(value));
     }
+    for (int i = 0; i < NUM_CYCLED_COLORS; ++i) {
+        value = pgm_read_dword(
+                &ui_tileset_bmp_pal_data32[i + COLOR_CYCLING_START_INDEX]);
+        memcpy(&base_colors[i], &value, sizeof(value));
+    }
+
     for (int i = 0; i < SQUARES_BMP_PAL_DATA_SIZE / sizeof(value); ++i) {
         value = pgm_read_dword(&squares_bmp_pal_data32[i]);
         CC_SetPaletteData(&value, BLOCKS_PALETTE_INDEX, i * sizeof(value),
@@ -217,8 +221,7 @@ void Screen::DrawBackground(int level)
     if (m_CurrentLevel != level) {
         m_CurrentLevel = level;
 
-#ifndef __AVR__
-        SDL_Color level_color;
+        Color level_color;
         // Select a different UI color for each level.
         const int num_colors = sizeof(kColors) / sizeof(kColors[0]);
         if (level >= 0 && level < num_colors)
@@ -228,15 +231,21 @@ void Screen::DrawBackground(int level)
 
         // Update the palette with the new color scheme.
         for (int i = 0; i < NUM_CYCLED_COLORS; ++i) {
-            SDL_Color new_color;
+            Color new_color;
             new_color.r = ((uint16_t)base_colors[i].r * level_color.r) >> 8;
             new_color.g = ((uint16_t)base_colors[i].g * level_color.g) >> 8;
             new_color.b = ((uint16_t)base_colors[i].b * level_color.b) >> 8;
             new_color.unused = 0;
+#ifdef __AVR__
+            CC_SetPaletteData(
+                    &new_color, UI_PALETTE_INDEX,
+                    (i + COLOR_CYCLING_START_INDEX) * sizeof(new_color),
+                    sizeof(new_color));
+#else
             SDL_SetColors(m_Bitmap, &new_color, i + COLOR_CYCLING_START_INDEX,
                           1);
+#endif  // defined(__AVR__)
         }
-#endif  // !defined(__AVR__)
     }
 
 #ifdef __AVR__

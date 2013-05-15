@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #ifndef __AVR__
 #include <SDL/SDL.h>
@@ -18,6 +19,18 @@ struct SDL_Surface;
 #include "Enums.h"
 
 class Screen {
+  public:
+#ifdef __AVR__
+    // Define a custom color struct.
+    struct Color {
+        uint8_t r, g, b;
+        uint8_t unused;
+    };
+#else
+    // Use SDL's color struct.
+    typedef SDL_Color Color;
+#endif  // defined (__AVR__)
+
   private:
     SDL_Surface*   m_Bitmap;           // Our back bitmap
     SDL_Surface*   m_SquaresBitmap;    // Our squares bitmap
@@ -28,10 +41,8 @@ class Screen {
     uint16_t m_UIDataOffset;
     uint16_t m_BlocksDataOffset;
 
-#ifndef __AVR__
     // Rotating part of original palette.
-    SDL_Color base_colors[255];
-#endif
+    Color base_colors[NUM_CYCLED_COLORS];
 
     int m_CurrentLevel;                // Current level, used for level colors.
 
