@@ -49,7 +49,7 @@
 #define NEEDED_SCORE_RECT_X 224  // score needed for next level
 #define NEEDED_SCORE_RECT_Y  96
 #define NEXT_BLOCK_CIRCLE_X 256 // next block in line to be focus block
-#define NEXT_BLOCK_CIRCLE_Y 192
+#define NEXT_BLOCK_CIRCLE_Y 176
 
 // Palette entry range used for color cycling.
 #define COLOR_CYCLING_START_INDEX     8
