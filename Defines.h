@@ -67,7 +67,7 @@
         (COLOR_CYCLING_END_INDEX - COLOR_CYCLING_START_INDEX + 1)
 
 // Tile layer indexes.
-#define MENU_LAYER_INDEX              0
+#define BG_LAYER_INDEX                0
 #define UI_LAYER_INDEX                1
 #define TEXT_LAYER_INDEX              2
 #define BLOCKS_LAYER_INDEX            3
@@ -76,6 +76,7 @@
 #define UI_PALETTE_INDEX              0
 #define TEXT_PALETTE_INDEX            1
 #define BLOCKS_PALETTE_INDEX          2
+#define BG_PALETTE_INDEX              3
 
 // Default tile color key and empty tile values.
 #define DEFAULT_TILE_COLOR_KEY     0x00

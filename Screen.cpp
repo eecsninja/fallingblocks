@@ -19,6 +19,9 @@
 #include "Data/bricks.pal.h"
 #include "Data/bricks.raw.h"
 #include "Data/ui_bricks.map.h"
+#include "Data/grass.pal.h"
+#include "Data/grass.raw.h"
+#include "Data/bg_grass.map.h"
 
 #else
 
@@ -71,9 +74,17 @@ void Screen::Init() {
         }
     }
 
+    // Load background image.
+    m_BGDataOffset = offset;
+    uint32_t value;
+    for (int i = 0; i < GRASS_BMP_RAW_DATA_SIZE / sizeof(value); ++i) {
+        value = pgm_read_dword(&grass_bmp_raw_data32[i]);
+        CC_SetVRAMData(&value, offset, sizeof(value));
+        offset += sizeof(value);
+    }
+
     // Load UI image.
     m_UIDataOffset = offset;
-    uint32_t value;
     for (int i = 0; i < BRICKS_BMP_RAW_DATA_SIZE / sizeof(value); ++i) {
         value = pgm_read_dword(&bricks_bmp_raw_data32[i]);
         CC_SetVRAMData(&value, offset, sizeof(value));
@@ -89,6 +100,12 @@ void Screen::Init() {
     }
 
     // Load palette data.
+    for (int i = 0; i < GRASS_BMP_PAL_DATA_SIZE / sizeof(value); ++i) {
+        value = pgm_read_dword(&grass_bmp_pal_data32[i]);
+        CC_SetPaletteData(&value, BG_PALETTE_INDEX, i * sizeof(value),
+                          sizeof(value));
+    }
+
     for (int i = 0; i < BRICKS_BMP_PAL_DATA_SIZE / sizeof(value); ++i) {
         value = pgm_read_dword(&bricks_bmp_pal_data32[i]);
         CC_SetPaletteData(&value, UI_PALETTE_INDEX, i * sizeof(value),
@@ -106,8 +123,27 @@ void Screen::Init() {
     CC_SetPaletteData(&white, TEXT_PALETTE_INDEX, sizeof(uint32_t) * 0xff,
                       sizeof(white));
 
+    // Fill in BG tilemap.
+    int x = 0;
+    int y = 0;
+    for (int i = 0; i < BG_GRASS_TMX_LAYER0_DAT_DATA_SIZE / sizeof(uint16_t);
+         ++i) {
+        uint16_t value = pgm_read_word(&bg_grass_tmx_layer0_dat_data16[i]);
+        CC_TileLayer_SetData(&value, BG_LAYER_INDEX,
+                             (x + y * TILEMAP_WIDTH) * sizeof(value),
+                             sizeof(value));
+        ++x;
+        // Tile map is not aligned to |TILEMAP_WIDTH|.  Its width is
+        // |WINDOW_WIDTH| / |SQUARE_SIZE|.
+        if (x >= WINDOW_WIDTH / SQUARE_SIZE) {
+            x -= WINDOW_WIDTH / SQUARE_SIZE;
+            ++y;
+        }
+    }
+
     // Fill in UI tilemap.
-    int x = 0, y = 0;
+    x = 0;
+    y = 0;
     for (int i = 0; i < UI_BRICKS_TMX_LAYER0_DAT_DATA_SIZE / sizeof(uint16_t);
          ++i) {
         uint16_t value = pgm_read_word(&ui_bricks_tmx_layer0_dat_data16[i]);
@@ -124,13 +160,11 @@ void Screen::Init() {
     }
 
     // Set up and enable tile layers.
-    CC_TileLayer_SetRegister(MENU_LAYER_INDEX, TILE_CTRL0,
+    CC_TileLayer_SetRegister(BG_LAYER_INDEX, TILE_CTRL0,
                              (1 << TILE_LAYER_ENABLED) |
-                             (1 << TILE_ENABLE_8x8) |
-                             (1 << TILE_ENABLE_8_BIT) |
-                             (TEXT_PALETTE_INDEX << TILE_PALETTE_START));
-    CC_TileLayer_SetRegister(MENU_LAYER_INDEX, TILE_DATA_OFFSET,
-                             m_FontDataOffset);
+                             (BG_PALETTE_INDEX << TILE_PALETTE_START));
+    CC_TileLayer_SetRegister(BG_LAYER_INDEX, TILE_DATA_OFFSET,
+                             m_BGDataOffset);
 
     CC_TileLayer_SetRegister(UI_LAYER_INDEX, TILE_CTRL0,
                              (1 << TILE_LAYER_ENABLED) |

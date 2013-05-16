@@ -40,6 +40,7 @@ class Screen {
 
     // VRAM offsets for font, UI, and block images.
     uint16_t m_FontDataOffset;
+    uint16_t m_BGDataOffset;
     uint16_t m_UIDataOffset;
     uint16_t m_BlocksDataOffset;
 
@@ -51,6 +52,7 @@ class Screen {
   public:
     Screen() : m_Bitmap(NULL), m_SquaresBitmap(NULL), m_Window(NULL),
                m_FontDataOffset(0),
+               m_BGDataOffset(0),
                m_UIDataOffset(0),
                m_BlocksDataOffset(0),
                m_CurrentLevel(0){}
