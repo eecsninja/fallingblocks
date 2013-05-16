@@ -65,10 +65,25 @@ void Screen::Init() {
     for (int i = 0; i < NUM_FONT_CHARS; ++i) {
         char c = i;
         for (int line = 0; line < NUM_FONT_CHAR_LINES; ++line) {
-            uint8_t line_data = get_font_line(c, line);
             uint8_t line_buffer[8];
-            for (int b = 0; b < sizeof(line_buffer); ++b)
-                line_buffer[b] = (line_data & (1 << b)) ? 1 : 0;
+            memset(line_buffer, 0, sizeof(line_buffer));
+
+            // Draw the shadow in black, offset by (1, 1) pixels.
+            if (line > 0) {
+                uint8_t line_data = get_font_line(c, line - 1);
+                for (int b = 1; b < sizeof(line_buffer); ++b) {
+                    if (line_data & (1 << (b - 1)))
+                        line_buffer[b] = FONT_BLACK;
+                }
+            }
+
+            // Draw the regular character bits in white.
+            uint8_t line_data = get_font_line(c, line);
+            for (int b = 0; b < sizeof(line_buffer); ++b) {
+                if (line_data & (1 << b))
+                    line_buffer[b] = FONT_WHITE;
+            }
+
             CC_SetVRAMData(line_buffer, offset, sizeof(line_buffer));
             offset += sizeof(line_buffer);
         }
@@ -119,8 +134,9 @@ void Screen::Init() {
     }
     uint32_t black = 0x00000000;
     uint32_t white = 0xffffffff;
-    CC_SetPaletteData(&black, TEXT_PALETTE_INDEX, 0, sizeof(black));
-    CC_SetPaletteData(&white, TEXT_PALETTE_INDEX, sizeof(uint32_t) * 0xff,
+    CC_SetPaletteData(&black, TEXT_PALETTE_INDEX, FONT_BLACK * sizeof(uint32_t),
+                      sizeof(black));
+    CC_SetPaletteData(&white, TEXT_PALETTE_INDEX, FONT_WHITE * sizeof(uint32_t),
                       sizeof(white));
 
     // Fill in BG tilemap.

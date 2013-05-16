@@ -82,4 +82,8 @@
 #define DEFAULT_TILE_COLOR_KEY     0x00
 #define DEFAULT_EMPTY_TILE_VALUE   0x00
 
+// Colors of the font characters.
+#define FONT_BLACK                    1
+#define FONT_WHITE                    2
+
 //  Aaron Cox, 2004 //
