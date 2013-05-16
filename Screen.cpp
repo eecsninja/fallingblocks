@@ -16,9 +16,9 @@
 // Image, palette, and tilemap data.
 #include "Data/squares_palette.h"
 #include "Data/squares_tileset.h"
-#include "Data/ui_palette.h"
-#include "Data/ui_tilemap.h"
-#include "Data/ui_tileset.h"
+#include "Data/bricks.pal.h"
+#include "Data/bricks.raw.h"
+#include "Data/ui_bricks.map.h"
 
 #else
 
@@ -74,8 +74,8 @@ void Screen::Init() {
     // Load UI image.
     m_UIDataOffset = offset;
     uint32_t value;
-    for (int i = 0; i < UI_TILESET_BMP_RAW_DATA_SIZE / sizeof(value); ++i) {
-        value = pgm_read_dword(&ui_tileset_bmp_raw_data32[i]);
+    for (int i = 0; i < BRICKS_BMP_RAW_DATA_SIZE / sizeof(value); ++i) {
+        value = pgm_read_dword(&bricks_bmp_raw_data32[i]);
         CC_SetVRAMData(&value, offset, sizeof(value));
         offset += sizeof(value);
     }
@@ -89,15 +89,10 @@ void Screen::Init() {
     }
 
     // Load palette data.
-    for (int i = 0; i < UI_TILESET_BMP_PAL_DATA_SIZE / sizeof(value); ++i) {
-        value = pgm_read_dword(&ui_tileset_bmp_pal_data32[i]);
+    for (int i = 0; i < BRICKS_BMP_PAL_DATA_SIZE / sizeof(value); ++i) {
+        value = pgm_read_dword(&bricks_bmp_pal_data32[i]);
         CC_SetPaletteData(&value, UI_PALETTE_INDEX, i * sizeof(value),
                           sizeof(value));
-    }
-    for (int i = 0; i < NUM_CYCLED_COLORS; ++i) {
-        value = pgm_read_dword(
-                &ui_tileset_bmp_pal_data32[i + COLOR_CYCLING_START_INDEX]);
-        memcpy(&base_colors[i], &value, sizeof(value));
     }
 
     for (int i = 0; i < SQUARES_BMP_PAL_DATA_SIZE / sizeof(value); ++i) {
@@ -113,8 +108,9 @@ void Screen::Init() {
 
     // Fill in UI tilemap.
     int x = 0, y = 0;
-    for (int i = 0; i < UI_TMX_LAYER0_DAT_DATA_SIZE / sizeof(uint16_t); ++i) {
-        uint16_t value = pgm_read_word(&ui_tmx_layer0_dat_data16[i]);
+    for (int i = 0; i < UI_BRICKS_TMX_LAYER0_DAT_DATA_SIZE / sizeof(uint16_t);
+         ++i) {
+        uint16_t value = pgm_read_word(&ui_bricks_tmx_layer0_dat_data16[i]);
         CC_TileLayer_SetData(&value, UI_LAYER_INDEX,
                              (x + y * TILEMAP_WIDTH) * sizeof(value),
                              sizeof(value));
@@ -138,8 +134,11 @@ void Screen::Init() {
 
     CC_TileLayer_SetRegister(UI_LAYER_INDEX, TILE_CTRL0,
                              (1 << TILE_LAYER_ENABLED) |
+                             (1 << TILE_ENABLE_NOP) |
                              (UI_PALETTE_INDEX << TILE_PALETTE_START));
     CC_TileLayer_SetRegister(UI_LAYER_INDEX, TILE_DATA_OFFSET, m_UIDataOffset);
+    CC_TileLayer_SetRegister(UI_LAYER_INDEX, TILE_NOP_VALUE,
+                             DEFAULT_EMPTY_TILE_VALUE);
 
     CC_TileLayer_SetRegister(TEXT_LAYER_INDEX, TILE_CTRL0,
                              (1 << TILE_LAYER_ENABLED) |
@@ -223,6 +222,13 @@ void Screen::DrawBackground(int level)
     if (m_CurrentLevel != level) {
         m_CurrentLevel = level;
 
+#ifdef __AVR__
+        // Update the tileset instead.
+        // Each tileset type has two tiles, so advance by two tiles
+        uint16_t offset = m_UIDataOffset +
+                         (level + 1) * SQUARE_SIZE * SQUARE_SIZE * 2;
+        CC_TileLayer_SetRegister(UI_LAYER_INDEX, TILE_DATA_OFFSET, offset);
+#else
         Color level_color;
         // Select a different UI color for each level.
         const int num_colors = sizeof(kColors) / sizeof(kColors[0]);
@@ -238,16 +244,10 @@ void Screen::DrawBackground(int level)
             new_color.g = ((uint16_t)base_colors[i].g * level_color.g) >> 8;
             new_color.b = ((uint16_t)base_colors[i].b * level_color.b) >> 8;
             new_color.unused = 0;
-#ifdef __AVR__
-            CC_SetPaletteData(
-                    &new_color, UI_PALETTE_INDEX,
-                    (i + COLOR_CYCLING_START_INDEX) * sizeof(new_color),
-                    sizeof(new_color));
-#else
             SDL_SetColors(m_Bitmap, &new_color, i + COLOR_CYCLING_START_INDEX,
                           1);
-#endif  // defined(__AVR__)
         }
+#endif  // defined(__AVR__)
     }
 
 #ifdef __AVR__
