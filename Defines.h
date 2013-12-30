@@ -70,8 +70,8 @@
 enum {
   BG_LAYER_INDEX,
   UI_LAYER_INDEX,
-  TEXT_LAYER_INDEX,
   BLOCKS_LAYER_INDEX,
+  TEXT_LAYER_INDEX,
 };
 
 // Palette indexes.
