@@ -9,12 +9,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#ifndef __AVR__
-#include <SDL/SDL.h>
-#else
-struct SDL_Surface;
-#endif
-
 #include "Defines.h"
 #include "Enums.h"
 
@@ -22,22 +16,13 @@ class cSquare;
 
 class Screen {
   public:
-#ifdef __AVR__
     // Define a custom color struct.
     struct Color {
         uint8_t r, g, b;
         uint8_t unused;
     };
-#else
-    // Use SDL's color struct.
-    typedef SDL_Color Color;
-#endif  // defined (__AVR__)
 
   private:
-    SDL_Surface*   m_Bitmap;           // Our back bitmap
-    SDL_Surface*   m_SquaresBitmap;    // Our squares bitmap
-    SDL_Surface*   m_Window;           // Our backbuffer
-
     // VRAM offsets for font, UI, and block images.
     uint16_t m_FontDataOffset;
     uint16_t m_BGDataOffset;
@@ -50,8 +35,7 @@ class Screen {
     int m_CurrentLevel;                // Current level, used for level colors.
 
   public:
-    Screen() : m_Bitmap(NULL), m_SquaresBitmap(NULL), m_Window(NULL),
-               m_FontDataOffset(0),
+    Screen() : m_FontDataOffset(0),
                m_BGDataOffset(0),
                m_UIDataOffset(0),
                m_BlocksDataOffset(0),

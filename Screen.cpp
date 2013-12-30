@@ -5,29 +5,8 @@
 
 #include "Screen.h"
 
-#ifdef __AVR__
-
-#include "cc_core.h"
-#include "cc_tile_layer.h"
-#include "registers.h"
-#include "tile_registers.h"
-#include "font_8x8.h"
-
-// Image, palette, and tilemap data.
-#include "Data/squares_palette.h"
-#include "Data/squares_tileset.h"
-#include "Data/bricks.pal.h"
-#include "Data/bricks.raw.h"
-#include "Data/ui_bricks.map.h"
-#include "Data/grass.pal.h"
-#include "Data/grass.raw.h"
-#include "Data/bg_grass.map.h"
-
-#else
-
-#include <SDL/SDL_ttf.h> // True Type Font header
-
-#endif
+#include <Arduino.h>
+#include <DuinoCube.h>
 
 #include "cSquare.h"
 #include "Defines.h"
@@ -36,8 +15,40 @@
 
 namespace {
 
-const char kBitmapFile[] = "data/ui.bmp";
-const char kSquaresFile[] = "data/squares.bmp";
+const char kFilePath[] = "falling";    // Base path of data files.
+
+struct File {
+  const char* filename;
+  uint16_t* vram_offset;  // For image data, compute and store VRAM offset here.
+  uint16_t addr;          // For other data, store data here.
+  uint16_t bank;          // Bank to use for |addr|.
+  uint16_t max_size;      // Size checking to avoid overflow.
+};
+
+// VRAM offsets of image data.
+uint16_t g_font_offset;
+uint16_t g_squares_offset;
+uint16_t g_grass_offset;
+uint16_t g_bricks_offset;
+
+// Image, palette, and tilemap data.
+const File kFiles[] = {
+  // Layer data.
+  { "bg.lay", NULL, TILEMAP(BG_LAYER_INDEX), TILEMAP_BANK, TILEMAP_SIZE },
+  { "ui.lay", NULL, TILEMAP(UI_LAYER_INDEX), TILEMAP_BANK, TILEMAP_SIZE },
+
+  // Palette data.
+  { "font.pal", NULL, PALETTE(TEXT_PALETTE_INDEX), 0, PALETTE_SIZE },
+  { "squares.pal", NULL, PALETTE(BLOCKS_PALETTE_INDEX), 0, PALETTE_SIZE },
+  { "bricks.pal", NULL, PALETTE(UI_PALETTE_INDEX), 0, PALETTE_SIZE },
+  { "grass.pal", NULL, PALETTE(BG_PALETTE_INDEX), 0, PALETTE_SIZE },
+
+  // Image data.
+  { "font.raw", &g_font_offset, 0, 0, VRAM_BANK_SIZE },
+  { "squares.raw", &g_squares_offset, 0, 0, VRAM_BANK_SIZE },
+  { "bricks.raw", &g_bricks_offset, 0, 0, VRAM_BANK_SIZE },
+  { "grass.raw", &g_grass_offset, 0, 0, VRAM_BANK_SIZE },
+};
 
 // Different colors for the UI.
 const Screen::Color kColors[] = {
@@ -48,351 +59,196 @@ const Screen::Color kColors[] = {
     { 128,   0,  64 },
 };
 
+// Font colors.
+#define BLACK    0x00000000
+#define WHITE    0xffffffff
+
+// Load image, palette, and tilemap data from file system.
+void loadResources() {
+  uint16_t vram_offset = 0;
+  for (int i = 0; i < sizeof(kFiles) / sizeof(kFiles[0]); ++i) {
+    const File& file = kFiles[i];
+
+    char filename[256];
+    sprintf(filename, "%s/%s", kFilePath, file.filename);
+
+    // Open the file.
+    uint16_t handle = DC.File.open(filename, FILE_READ_ONLY);
+    if (!handle) {
+      printf("Could not open file %s.\n", filename);
+      continue;
+    }
+
+    uint16_t file_size = DC.File.size(handle);
+    printf("File %s is 0x%x bytes\n", filename, file_size);
+
+    if (file_size > file.max_size) {
+      printf("File is too big!\n");
+      DC.File.close(handle);
+      continue;
+    }
+
+    // Compute write destination.
+    uint16_t dest_addr;
+    uint16_t dest_bank;
+
+    if (file.vram_offset) {
+      // Set up for VRAM write.
+
+      // If this doesn't fit in the remaining part of the current bank, use the
+      // next VRAM bank.
+      if (vram_offset % VRAM_BANK_SIZE + file_size > VRAM_BANK_SIZE)
+        vram_offset += VRAM_BANK_SIZE - (vram_offset % VRAM_BANK_SIZE);
+
+      // Record VRAM offset.
+      *file.vram_offset = vram_offset;
+
+      // Determine the destination VRAM address and bank.
+      dest_addr = VRAM_BASE + vram_offset % VRAM_BANK_SIZE;
+      dest_bank = vram_offset / VRAM_BANK_SIZE + VRAM_BANK_BEGIN;
+      DC.Core.writeWord(REG_SYS_CTRL, (1 << REG_SYS_CTRL_VRAM_ACCESS));
+
+      // Update the VRAM offset.
+      vram_offset += file_size;
+    } else {
+      // Set up for non-VRAM write.
+      dest_addr = file.addr;
+      dest_bank = file.bank;
+    }
+
+    printf("Writing to 0x%x with bank = %d\n", dest_addr, dest_bank);
+    DC.Core.writeWord(REG_MEM_BANK, dest_bank);
+    DC.File.readToCore(handle, dest_addr, file_size);
+
+    DC.File.close(handle);
+  }
+
+  // Set to bank 0.
+  DC.Core.writeWord(REG_MEM_BANK, 0);
+
+  // Allow the graphics pipeline access to VRAM.
+  DC.Core.writeWord(REG_SYS_CTRL, (0 << REG_SYS_CTRL_VRAM_ACCESS));
 }
 
+}  // namespace
+
 void Screen::Init() {
-    // Setup our window's dimensions, bits-per-pixel (0 tells SDL to choose for us), //
-    // and video format (SDL_ANYFORMAT leaves the decision to SDL). This function    //
-    // returns a pointer to our window which we assign to m_Window.                  //
-#ifdef __AVR__
-    CC_Init();
+    // Load game data.
+    loadResources();
 
-    // Load images.
+    // Copy VRAM offsets to member variables.
+    m_FontDataOffset = g_font_offset;
+    m_BGDataOffset = g_grass_offset;
+    m_UIDataOffset = g_bricks_offset;
+    m_BlocksDataOffset = g_squares_offset;
 
-    // Set up font.
-    m_FontDataOffset = 0;
-    uint16_t offset = m_FontDataOffset;
-    for (int i = 0; i < NUM_FONT_CHARS; ++i) {
-        char c = i;
-        for (int line = 0; line < NUM_FONT_CHAR_LINES; ++line) {
-            uint8_t line_buffer[8];
-            memset(line_buffer, 0, sizeof(line_buffer));
+    // By default, map memory bank to the tilemap bank.  There's no need to
+    // update VRAM during the game.
+    DC.Core.writeWord(REG_MEM_BANK, TILEMAP_BANK);
 
-            // Draw the shadow in black, offset by (1, 1) pixels.
-            if (line > 0) {
-                uint8_t line_data = get_font_line(c, line - 1);
-                for (int b = 1; b < sizeof(line_buffer); ++b) {
-                    if (line_data & (1 << (b - 1)))
-                        line_buffer[b] = FONT_BLACK;
-                }
-            }
-
-            // Draw the regular character bits in white.
-            uint8_t line_data = get_font_line(c, line);
-            for (int b = 0; b < sizeof(line_buffer); ++b) {
-                if (line_data & (1 << b))
-                    line_buffer[b] = FONT_WHITE;
-            }
-
-            CC_SetVRAMData(line_buffer, offset, sizeof(line_buffer));
-            offset += sizeof(line_buffer);
-        }
-    }
-
-    // Load background image.
-    m_BGDataOffset = offset;
-    uint32_t value;
-    for (int i = 0; i < GRASS_BMP_RAW_DATA_SIZE / sizeof(value); ++i) {
-        value = pgm_read_dword(&grass_bmp_raw_data32[i]);
-        CC_SetVRAMData(&value, offset, sizeof(value));
-        offset += sizeof(value);
-    }
-
-    // Load UI image.
-    m_UIDataOffset = offset;
-    for (int i = 0; i < BRICKS_BMP_RAW_DATA_SIZE / sizeof(value); ++i) {
-        value = pgm_read_dword(&bricks_bmp_raw_data32[i]);
-        CC_SetVRAMData(&value, offset, sizeof(value));
-        offset += sizeof(value);
-    }
-
-    // Load squares data.
-    m_BlocksDataOffset = offset;
-    for (int i = 0; i < SQUARES_BMP_RAW_DATA_SIZE / sizeof(value); ++i) {
-        value = pgm_read_dword(&squares_bmp_raw_data32[i]);
-        CC_SetVRAMData(&value, offset, sizeof(value));
-        offset += sizeof(value);
-    }
-
-    // Load palette data.
-    for (int i = 0; i < GRASS_BMP_PAL_DATA_SIZE / sizeof(value); ++i) {
-        value = pgm_read_dword(&grass_bmp_pal_data32[i]);
-        CC_SetPaletteData(&value, BG_PALETTE_INDEX, i * sizeof(value),
-                          sizeof(value));
-    }
-
-    for (int i = 0; i < BRICKS_BMP_PAL_DATA_SIZE / sizeof(value); ++i) {
-        value = pgm_read_dword(&bricks_bmp_pal_data32[i]);
-        CC_SetPaletteData(&value, UI_PALETTE_INDEX, i * sizeof(value),
-                          sizeof(value));
-    }
-
-    for (int i = 0; i < SQUARES_BMP_PAL_DATA_SIZE / sizeof(value); ++i) {
-        value = pgm_read_dword(&squares_bmp_pal_data32[i]);
-        CC_SetPaletteData(&value, BLOCKS_PALETTE_INDEX, i * sizeof(value),
-                          sizeof(value));
-    }
-    uint32_t black = 0x00000000;
-    uint32_t white = 0xffffffff;
-    CC_SetPaletteData(&black, TEXT_PALETTE_INDEX, FONT_BLACK * sizeof(uint32_t),
-                      sizeof(black));
-    CC_SetPaletteData(&white, TEXT_PALETTE_INDEX, FONT_WHITE * sizeof(uint32_t),
-                      sizeof(white));
-
-    // Fill in BG tilemap.
-    int x = 0;
-    int y = 0;
-    for (int i = 0; i < BG_GRASS_TMX_LAYER0_DAT_DATA_SIZE / sizeof(uint16_t);
-         ++i) {
-        uint16_t value = pgm_read_word(&bg_grass_tmx_layer0_dat_data16[i]);
-        CC_TileLayer_SetData(&value, BG_LAYER_INDEX,
-                             (x + y * TILEMAP_WIDTH) * sizeof(value),
-                             sizeof(value));
-        ++x;
-        // Tile map is not aligned to |TILEMAP_WIDTH|.  Its width is
-        // |WINDOW_WIDTH| / |SQUARE_SIZE|.
-        if (x >= WINDOW_WIDTH / SQUARE_SIZE) {
-            x -= WINDOW_WIDTH / SQUARE_SIZE;
-            ++y;
-        }
-    }
-
-    // Fill in UI tilemap.
-    x = 0;
-    y = 0;
-    for (int i = 0; i < UI_BRICKS_TMX_LAYER0_DAT_DATA_SIZE / sizeof(uint16_t);
-         ++i) {
-        uint16_t value = pgm_read_word(&ui_bricks_tmx_layer0_dat_data16[i]);
-        CC_TileLayer_SetData(&value, UI_LAYER_INDEX,
-                             (x + y * TILEMAP_WIDTH) * sizeof(value),
-                             sizeof(value));
-        ++x;
-        // Tile map is not aligned to |TILEMAP_WIDTH|.  Its width is
-        // |WINDOW_WIDTH| / |SQUARE_SIZE|.
-        if (x >= WINDOW_WIDTH / SQUARE_SIZE) {
-            x -= WINDOW_WIDTH / SQUARE_SIZE;
-            ++y;
-        }
-    }
+    // Set up two-color palette for font.
+    DC.Core.writeWord(PALETTE_ENTRY(TEXT_PALETTE_INDEX, FONT_BLACK), BLACK);
+    DC.Core.writeWord(PALETTE_ENTRY(TEXT_PALETTE_INDEX, FONT_WHITE), WHITE);
 
     // Set up and enable tile layers.
-    CC_TileLayer_SetRegister(BG_LAYER_INDEX, TILE_CTRL0,
-                             (1 << TILE_LAYER_ENABLED) |
-                             (BG_PALETTE_INDEX << TILE_PALETTE_START));
-    CC_TileLayer_SetRegister(BG_LAYER_INDEX, TILE_DATA_OFFSET,
-                             m_BGDataOffset);
+    DC.Core.writeWord(TILE_LAYER_REG(BG_LAYER_INDEX, TILE_CTRL_0),
+                      (1 << TILE_LAYER_ENABLED) |
+                      (BG_PALETTE_INDEX << TILE_PALETTE_START));
+    DC.Core.writeWord(TILE_LAYER_REG(BG_LAYER_INDEX, TILE_DATA_OFFSET),
+                      m_BGDataOffset);
 
-    CC_TileLayer_SetRegister(UI_LAYER_INDEX, TILE_CTRL0,
-                             (1 << TILE_LAYER_ENABLED) |
-                             (1 << TILE_ENABLE_NOP) |
-                             (UI_PALETTE_INDEX << TILE_PALETTE_START));
-    CC_TileLayer_SetRegister(UI_LAYER_INDEX, TILE_DATA_OFFSET, m_UIDataOffset);
-    CC_TileLayer_SetRegister(UI_LAYER_INDEX, TILE_NOP_VALUE,
-                             DEFAULT_EMPTY_TILE_VALUE);
+    DC.Core.writeWord(TILE_LAYER_REG(UI_LAYER_INDEX, TILE_CTRL_0),
+                      (1 << TILE_LAYER_ENABLED) |
+                      (1 << TILE_ENABLE_NOP) |
+                      (UI_PALETTE_INDEX << TILE_PALETTE_START));
+    DC.Core.writeWord(TILE_LAYER_REG(UI_LAYER_INDEX, TILE_DATA_OFFSET),
+                      m_UIDataOffset);
+    DC.Core.writeWord(TILE_LAYER_REG(UI_LAYER_INDEX, TILE_EMPTY_VALUE),
+                      DEFAULT_EMPTY_TILE_VALUE);
 
-    CC_TileLayer_SetRegister(TEXT_LAYER_INDEX, TILE_CTRL0,
-                             (1 << TILE_LAYER_ENABLED) |
-                             (1 << TILE_ENABLE_8x8) |
-                             (1 << TILE_ENABLE_8_BIT) |
-                             (1 << TILE_ENABLE_TRANSP) |
-                             (TEXT_PALETTE_INDEX << TILE_PALETTE_START));
-    CC_TileLayer_SetRegister(TEXT_LAYER_INDEX, TILE_DATA_OFFSET,
-                             m_FontDataOffset);
-    CC_TileLayer_SetRegister(TEXT_LAYER_INDEX, TILE_COLOR_KEY,
-                             DEFAULT_TILE_COLOR_KEY);
+    DC.Core.writeWord(TILE_LAYER_REG(TEXT_LAYER_INDEX, TILE_CTRL_0),
+                      (1 << TILE_LAYER_ENABLED) |
+                      (1 << TILE_ENABLE_8x8) |
+                      (1 << TILE_ENABLE_8_BIT) |
+                      (1 << TILE_ENABLE_TRANSP) |
+                      (TEXT_PALETTE_INDEX << TILE_PALETTE_START));
+    DC.Core.writeWord(TILE_LAYER_REG(TEXT_LAYER_INDEX, TILE_DATA_OFFSET),
+                      m_FontDataOffset);
+    DC.Core.writeWord(TILE_LAYER_REG(TEXT_LAYER_INDEX, TILE_COLOR_KEY),
+                      DEFAULT_TILE_COLOR_KEY);
 
-    CC_TileLayer_SetRegister(BLOCKS_LAYER_INDEX, TILE_CTRL0,
-                             (1 << TILE_LAYER_ENABLED) |
-                             (1 << TILE_ENABLE_NOP) |
-                             (BLOCKS_PALETTE_INDEX << TILE_PALETTE_START));
-    CC_TileLayer_SetRegister(BLOCKS_LAYER_INDEX, TILE_DATA_OFFSET,
-                             m_BlocksDataOffset);
-    CC_TileLayer_SetRegister(BLOCKS_LAYER_INDEX, TILE_NOP_VALUE,
-                             DEFAULT_EMPTY_TILE_VALUE);
+    DC.Core.writeWord(TILE_LAYER_REG(BLOCKS_LAYER_INDEX, TILE_CTRL_0),
+                      (1 << TILE_LAYER_ENABLED) |
+                      (1 << TILE_ENABLE_NOP) |
+                      (BLOCKS_PALETTE_INDEX << TILE_PALETTE_START));
+    DC.Core.writeWord(TILE_LAYER_REG(BLOCKS_LAYER_INDEX, TILE_DATA_OFFSET),
+                      m_BlocksDataOffset);
+    DC.Core.writeWord(TILE_LAYER_REG(BLOCKS_LAYER_INDEX, TILE_EMPTY_VALUE),
+                      DEFAULT_EMPTY_TILE_VALUE);
 
     // Set up UI color
     DrawBackground(1);
-
-#else
-    m_Window = SDL_SetVideoMode(WINDOW_WIDTH, WINDOW_HEIGHT, 0, SDL_ANYFORMAT);
-    // Set the title of our window //
-    SDL_WM_SetCaption(WINDOW_CAPTION, 0);
-
-    // Fill our bitmap structure with information //
-    m_Bitmap = SDL_LoadBMP(kBitmapFile);
-    if (!m_Bitmap)
-        fprintf(stderr, "Unable to open %s\n", kBitmapFile);
-
-    for (int i = 0; i < NUM_CYCLED_COLORS; ++i) {
-        base_colors[i] =
-            m_Bitmap->format->palette->colors[i + COLOR_CYCLING_START_INDEX];
-    }
-
-    m_SquaresBitmap = SDL_LoadBMP(kSquaresFile);
-    if (!m_Bitmap)
-        fprintf(stderr, "Unable to open %s\n", kSquaresFile);
-
-    // Initialize the true type font library //
-    TTF_Init();
-#endif  // defined(__AVR__)
 }
 
 void Screen::Cleanup() {
-#ifndef __AVR__
-    // Free our surfaces //
-    SDL_FreeSurface(m_Bitmap);
-    SDL_FreeSurface(m_SquaresBitmap);
-    SDL_FreeSurface(m_Window);
-
-    // Shutdown the true type font library //
-    TTF_Quit();
-#endif  // !defined(__AVR__)
 }
 
 void Screen::Update() {
-#ifndef __AVR__
-    // Tell SDL to display our backbuffer. The four 0's will make //
-    // SDL display the whole screen. //
-    SDL_UpdateRect(m_Window, 0, 0, 0, 0);
-#endif
 }
 
 void Screen::Clear() {
-#ifndef __AVR__
-    // This function just fills a surface with a given color. The //
-    // first 0 tells SDL to fill the whole surface. The second 0  //
-    // is for black. //
-    SDL_FillRect(m_Window, 0, 0);
-#endif
 }
 
 // This function draws the background //
-void Screen::DrawBackground(int level)
-{
+void Screen::DrawBackground(int level) {
     if (m_CurrentLevel != level) {
         m_CurrentLevel = level;
 
-#ifdef __AVR__
         // Update the tileset instead.
         // Each tileset type has two tiles, so advance by two tiles
         uint16_t offset = m_UIDataOffset +
                          (level + 1) * SQUARE_SIZE * SQUARE_SIZE * 2;
-        CC_TileLayer_SetRegister(UI_LAYER_INDEX, TILE_DATA_OFFSET, offset);
-#else
-        Color level_color;
-        // Select a different UI color for each level.
-        const int num_colors = sizeof(kColors) / sizeof(kColors[0]);
-        if (level >= 0 && level < num_colors)
-            level_color = kColors[level - 1];
-        else
-            level_color = kColors[num_colors - 1];
-
-        // Update the palette with the new color scheme.
-        for (int i = 0; i < NUM_CYCLED_COLORS; ++i) {
-            Color new_color;
-            new_color.r = ((uint16_t)base_colors[i].r * level_color.r) >> 8;
-            new_color.g = ((uint16_t)base_colors[i].g * level_color.g) >> 8;
-            new_color.b = ((uint16_t)base_colors[i].b * level_color.b) >> 8;
-            new_color.unused = 0;
-            SDL_SetColors(m_Bitmap, &new_color, i + COLOR_CYCLING_START_INDEX,
-                          1);
-        }
-#endif  // defined(__AVR__)
+        DC.Core.writeWord(TILE_LAYER_REG(UI_LAYER_INDEX, TILE_DATA_OFFSET),
+                          offset);
     }
 
-#ifdef __AVR__
     // Clear the blocks layer.
     uint16_t buffer[GAME_AREA_WIDTH];
     for (int x = 0; x < GAME_AREA_WIDTH; ++x)
         buffer[x] = NO_BLOCK;
     for (int y = GAME_AREA_TOP; y < GAME_AREA_BOTTOM; ++y) {
-        CC_TileLayer_SetData(
-                buffer, BLOCKS_LAYER_INDEX,
-                (y * TILEMAP_WIDTH + GAME_AREA_LEFT) * sizeof(uint16_t),
-                sizeof(buffer));
+        uint16_t offset = (y * TILEMAP_WIDTH + GAME_AREA_LEFT);
+        DC.Core.writeData(TILEMAP(BLOCKS_LAYER_INDEX) + offset,
+                          buffer, sizeof(buffer));
     }
-#else
-    SDL_Rect destination = { 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT };
-    SDL_BlitSurface(m_Bitmap, NULL, m_Window, &destination);
-#endif  // defined(__AVR__)
 }
 
 void Screen::DrawSquare(const cSquare& square) {
-#ifdef __AVR__
     int tile_x = square.GetX() / SQUARE_SIZE;
     int tile_y = square.GetY() / SQUARE_SIZE;
-    uint16_t tile_value = square.GetType();
-    CC_TileLayer_SetData(&tile_value, BLOCKS_LAYER_INDEX,
-                         (tile_x + tile_y * TILEMAP_WIDTH) * sizeof(tile_value),
-                         sizeof(tile_value));
-#else
-    // The bitmap of each color of square is arranged in the same order as the
-    // block type enums.
-    SDL_Rect source;
-    source.w = SQUARE_SIZE;
-    source.h = SQUARE_SIZE;
-    source.x = 0;
-    source.y = square.GetType() * source.h;
-
-    SDL_Rect destination =
-            { square.GetX(), square.GetY(), SQUARE_SIZE, SQUARE_SIZE };
-    SDL_BlitSurface(m_SquaresBitmap, &source, m_Window, &destination);
-#endif  // defined(__AVR__)
+    uint16_t offset = (tile_x + tile_y * TILEMAP_WIDTH) * sizeof(uint16_t);
+    DC.Core.writeWord(TILEMAP(BLOCKS_LAYER_INDEX) + offset, square.GetType());
 }
 
-void Screen::EraseSquare(const cSquare& square)
-{
-#ifdef __AVR__
+void Screen::EraseSquare(const cSquare& square) {
     int tile_x = square.GetX() / SQUARE_SIZE;
     int tile_y = square.GetY() / SQUARE_SIZE;
-    uint16_t tile_value = NO_BLOCK;
-    CC_TileLayer_SetData(&tile_value, BLOCKS_LAYER_INDEX,
-                         (tile_x + tile_y * TILEMAP_WIDTH) * sizeof(tile_value),
-                         sizeof(tile_value));
-#endif  // defined(__AVR__)
+    uint16_t offset = (tile_x + tile_y * TILEMAP_WIDTH) * sizeof(uint16_t);
+    DC.Core.writeWord(TILEMAP(BLOCKS_LAYER_INDEX) + offset, NO_BLOCK);
 }
 
 void Screen::DisplayText(const char* text, int x, int y, int size,
-                         int fR, int fG, int fB, int bR, int bG, int bB)
-{
-#ifdef __AVR__
-    CC_TileLayer_SetData(text, TEXT_LAYER_INDEX, x + y * TILEMAP_WIDTH * 2,
-                         strlen(text));
-#else
-    // Open our font and set its size to the given parameter //
-    TTF_Font* font = TTF_OpenFont("arial.ttf", size);
-
-    SDL_Color foreground  = { fR, fG, fB};   // text color
-    SDL_Color background  = { bR, bG, bB };  // color of what's behind the text
-
-    // This renders our text to a temporary surface. There //
-    // are other text functions, but this one looks nicer. //
-    SDL_Surface* temp = TTF_RenderText_Shaded(font, text, foreground, background);
-
-    // A structure storing the destination of our text. //
-    SDL_Rect destination = { x * TEXT_SIZE, y * TEXT_SIZE, 0, 0 };
-
-    // Blit the text surface to our window surface. //
-    SDL_BlitSurface(temp, NULL, m_Window, &destination);
-
-    // Always free memory! //
-    SDL_FreeSurface(temp);
-
-    // Close the font. //
-    TTF_CloseFont(font);
-#endif  // defined(__AVR__)
+                         int fR, int fG, int fB, int bR, int bG, int bB) {
+    DC.Core.writeData(TILEMAP(TEXT_LAYER_INDEX) + x + y * TILEMAP_WIDTH * 2,
+                      text, strlen(text));
 }
 
 void Screen::WaitForVblank() {
-#ifdef __AVR__
-      while(!(CC_GetRegister(CC_REG_OUTPUT_STATUS) & (1 << CC_REG_VBLANK)));
-#endif
+    while (!(DC.Core.readWord(REG_OUTPUT_STATUS) & (1 << REG_VBLANK)));
 }
 
 void Screen::WaitForNoVblank() {
-#ifdef __AVR__
-      while(CC_GetRegister(CC_REG_OUTPUT_STATUS) & (1 << CC_REG_VBLANK));
-#endif
+    while ((DC.Core.readWord(REG_OUTPUT_STATUS) & (1 << REG_VBLANK)));
 }
 
 //  Aaron Cox, 2004 //
