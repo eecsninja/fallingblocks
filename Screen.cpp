@@ -12,6 +12,7 @@
 #include "Defines.h"
 
 #define TILEMAP_WIDTH       32
+#define TILEMAP_HEIGHT      32
 
 namespace {
 
@@ -145,6 +146,17 @@ void Screen::Init() {
     // By default, map memory bank to the tilemap bank.  There's no need to
     // update VRAM during the game.
     DC.Core.writeWord(REG_MEM_BANK, TILEMAP_BANK);
+
+    // Manually clear the text layer.
+    uint16_t cleared_buffer[TILEMAP_WIDTH];
+    memset(cleared_buffer, 0, sizeof(cleared_buffer));
+    uint16_t offset = 0;
+    for (int y = 0; y < TILEMAP_HEIGHT; ++y) {
+      DC.Core.writeData(TILEMAP(TEXT_LAYER_INDEX) + offset,
+                        cleared_buffer,
+                        sizeof(cleared_buffer));
+      offset += TILEMAP_WIDTH * sizeof(uint16_t);
+    }
 
     // Set up two-color palette for font.
     DC.Core.writeWord(PALETTE_ENTRY(TEXT_PALETTE_INDEX, FONT_BLACK), BLACK);
