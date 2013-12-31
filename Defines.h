@@ -45,6 +45,9 @@
 // Text characters are 8x8.
 #define TEXT_SIZE         8
 
+// Each entry in the block tilemap is two bytes.
+#define BLOCK_TILE_ENTRY_SIZE     sizeof(uint16_t)
+
 // Starting position of the focus block //
 #define BLOCK_START_X     6  // 96 / SQUARE_SIZE
 #define BLOCK_START_Y     2  // 32 / SQUARE_SIZE

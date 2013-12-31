@@ -155,7 +155,7 @@ void Screen::Init() {
       DC.Core.writeData(TILEMAP(TEXT_LAYER_INDEX) + offset,
                         cleared_buffer,
                         sizeof(cleared_buffer));
-      offset += TILEMAP_WIDTH * sizeof(uint16_t);
+      offset += TILEMAP_WIDTH * BLOCK_TILE_ENTRY_SIZE;
     }
 
     // Set up two-color palette for font.
@@ -226,12 +226,16 @@ void Screen::DrawBackground(int level) {
 
     // Clear the blocks layer.
     uint16_t buffer[GAME_AREA_WIDTH];
-    for (int x = 0; x < GAME_AREA_WIDTH; ++x)
+    for (int x = 0; x < sizeof(buffer) / sizeof(buffer[0]); ++x)
         buffer[x] = NO_BLOCK;
+
+    // Start at the top left corner.
+    uint16_t offset = GAME_AREA_LEFT * BLOCK_TILE_ENTRY_SIZE +
+                      GAME_AREA_TOP* TILEMAP_WIDTH * BLOCK_TILE_ENTRY_SIZE;
     for (int y = GAME_AREA_TOP; y < GAME_AREA_BOTTOM; ++y) {
-        uint16_t offset = (y * TILEMAP_WIDTH + GAME_AREA_LEFT);
         DC.Core.writeData(TILEMAP(BLOCKS_LAYER_INDEX) + offset,
                           buffer, sizeof(buffer));
+        offset += TILEMAP_WIDTH * BLOCK_TILE_ENTRY_SIZE;
     }
 }
 
