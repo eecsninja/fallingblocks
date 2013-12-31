@@ -35,8 +35,8 @@ uint16_t g_bricks_offset;
 // Image, palette, and tilemap data.
 const File kFiles[] = {
   // Layer data.
-  { "bg.lay", NULL, TILEMAP(BG_LAYER_INDEX), TILEMAP_BANK, TILEMAP_SIZE },
-  { "ui.lay", NULL, TILEMAP(UI_LAYER_INDEX), TILEMAP_BANK, TILEMAP_SIZE },
+  { "bg_grass.lay", NULL, TILEMAP(BG_LAYER_INDEX), TILEMAP_BANK, TILEMAP_SIZE },
+  { "ui_brick.lay", NULL, TILEMAP(UI_LAYER_INDEX), TILEMAP_BANK, TILEMAP_SIZE },
 
   // Palette data.
   { "font.pal", NULL, PALETTE(TEXT_PALETTE_INDEX), 0, PALETTE_SIZE },
