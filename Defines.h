@@ -16,7 +16,7 @@
 // The game area is the area where the focus block can go. //
 // These values are used to check collisions between the   //
 // game squares and the sides of the game area.            //
-#define GAME_AREA_LEFT     2  // 16 / SQUARE_SIZE
+#define GAME_AREA_LEFT     2  // 32 / SQUARE_SIZE
 #define GAME_AREA_RIGHT   12  // 192 / SQUARE_SIZE
 #define GAME_AREA_TOP      1  // 16 / SQUARE_SIZE
 #define GAME_AREA_BOTTOM  14  // 224 / SQUARE_SIZE
