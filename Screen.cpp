@@ -147,15 +147,18 @@ void Screen::Init() {
     // update VRAM during the game.
     DC.Core.writeWord(REG_MEM_BANK, TILEMAP_BANK);
 
-    // Manually clear the text layer.
+    // Manually clear the text and blocks layers.
+    const int kLayers[] = { TEXT_LAYER_INDEX, BLOCKS_LAYER_INDEX };
+
     uint16_t cleared_buffer[TILEMAP_WIDTH];
     memset(cleared_buffer, 0, sizeof(cleared_buffer));
-    uint16_t offset = 0;
-    for (int y = 0; y < TILEMAP_HEIGHT; ++y) {
-      DC.Core.writeData(TILEMAP(TEXT_LAYER_INDEX) + offset,
-                        cleared_buffer,
-                        sizeof(cleared_buffer));
-      offset += TILEMAP_WIDTH * BLOCK_TILE_ENTRY_SIZE;
+    for (int i = 0; i < sizeof(kLayers) / sizeof(kLayers[0]); ++i) {
+      uint16_t offset = 0;
+      for (int y = 0; y < TILEMAP_HEIGHT; ++y) {
+        DC.Core.writeData(TILEMAP(kLayers[i]) + offset, cleared_buffer,
+                          sizeof(cleared_buffer));
+        offset += TILEMAP_WIDTH * BLOCK_TILE_ENTRY_SIZE;
+      }
     }
 
     // Set up two-color palette for font.
