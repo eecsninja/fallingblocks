@@ -35,13 +35,13 @@ namespace System {
             key_state.yes = 1;
         if (state.buttons & (1 << GAMEPAD_BUTTON_1))
             key_state.no = 1;
-        if (state.y == 0)
+        if (state.y < 0)
             key_state.up = 1;
-        if (state.y == UINT8_MAX)
+        if (state.y > 0)
             key_state.down = 1;
-        if (state.x == 0)
+        if (state.x < 0)
             key_state.left = 1;
-        if (state.x == UINT8_MAX)
+        if (state.x > 0)
             key_state.right = 1;
 
         return key_state;
